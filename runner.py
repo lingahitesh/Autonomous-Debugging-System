@@ -2,6 +2,7 @@ import subprocess
 import os
 from parser import parse_runtime_error
 from parser import parse_compile_error
+from context import extract_context
 
 def compile_java(file_path):
     result=subprocess.run(
@@ -33,6 +34,11 @@ def main():
         parsed = parse_compile_error(compile_result.stderr)
         print("\n--- PARSED COMPILE ERROR ---")
         print(parsed)
+        if parsed:
+            context = extract_context(parsed["path"], parsed["line"])
+            print("\n--- CODE CONTEXT (COMPILE ERROR) ---")
+            for line in context:
+                print(line)
         return
     else:
         print("Compilation Successful")
@@ -40,9 +46,21 @@ def main():
     print("\nRunning...")
     run_result=run_java(class_name, directory)
 
-    parsed = parse_runtime_error(run_result.stderr)
-    print("\n--- PARSED RUNTIME ERROR ---")
-    print(parsed)
+    if run_result.returncode!=0:
+        print("Running Failed")
+        parsed = parse_runtime_error(run_result.stderr)
+        if parsed:
+            base_dir = os.path.dirname(file_path) or "."
+            full_path = os.path.join(base_dir, parsed["file"])
+
+            context = extract_context(full_path, parsed["line"])
+            print("\n--- CODE CONTEXT ---")
+            for line in context:
+                print(line)
+        print("\n--- PARSED RUNTIME ERROR ---")
+        print(parsed)
+    else:
+        print("Running Successful")
 
     print("\n--- OUTPUT ---")
     print(run_result.stdout)
