@@ -3,6 +3,7 @@ import os
 from parser import parse_runtime_error
 from parser import parse_compile_error
 from context import extract_context
+from ai import generate_fix
 
 def compile_java(file_path):
     result=subprocess.run(
@@ -39,6 +40,11 @@ def main():
             print("\n--- CODE CONTEXT (COMPILE ERROR) ---")
             for line in context:
                 print(line)
+
+            fix = generate_fix(parsed, context)
+
+            print("\n--- AI FIX ---")
+            print(fix)
         return
     else:
         print("Compilation Successful")
@@ -49,16 +55,21 @@ def main():
     if run_result.returncode!=0:
         print("Running Failed")
         parsed = parse_runtime_error(run_result.stderr)
+        print("\n--- PARSED RUNTIME ERROR ---")
+        print(parsed)
         if parsed:
             base_dir = os.path.dirname(file_path) or "."
             full_path = os.path.join(base_dir, parsed["file"])
 
             context = extract_context(full_path, parsed["line"])
-            print("\n--- CODE CONTEXT ---")
+            print("\n--- CODE CONTEXT (RUNTIME ERROR) ---")
             for line in context:
                 print(line)
-        print("\n--- PARSED RUNTIME ERROR ---")
-        print(parsed)
+
+            fix = generate_fix(parsed, context)
+
+            print("\n--- AI FIX ---")
+            print(fix)
     else:
         print("Running Successful")
 
