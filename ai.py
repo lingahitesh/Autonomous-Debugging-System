@@ -29,7 +29,7 @@ Code:
         model="openai/gpt-oss-120b",
         messages=[
             {"role": "user", "content": prompt}
-        ],
+        ],# type: ignore
         temperature=0
     )
 

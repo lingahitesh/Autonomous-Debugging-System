@@ -58,3 +58,8 @@ Features-
 
    
 Unlike ChatGPT, my system doesn’t rely on manual input or isolated context. It continuously monitors and executes the codebase, identifies failures in real time, and iteratively fixes them through an autonomous loop. It also builds a memory of recurring error patterns specific to the developer, allowing it to predict and prevent bugs before they occur. So instead of being a reactive assistant, it becomes a proactive debugging system integrated into the development workflow.
+
+This system integrates debugging into an automated loop.
+
+Instead of manually copying code into an LLM, it detects errors, generates fixes, applies them, and validates them by recompiling.
+So it's not just AI-assisted — it's autonomous.

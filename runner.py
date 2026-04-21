@@ -22,62 +22,81 @@ def run_java(class_name, cwd):
     )
     return result
 
+def parse_fix(fix):
+    try:
+        line_no, code = fix.split(":", 1)
+        return int(line_no.strip()), code.strip()
+    except:
+        return None, None
+
+def apply_fix(file_path, line_no, new_code):
+    with open(file_path, "r") as f:
+        lines = f.readlines()
+
+    old_line = lines[line_no - 1]
+
+    # extract indentation (spaces/tabs at start)
+    indentation = old_line[:len(old_line) - len(old_line.lstrip())]
+
+    # apply fix with same indentation
+    lines[line_no - 1] = indentation + new_code + "\n"
+
+    with open(file_path, "w") as f:
+        f.writelines(lines)
+
 def main():
     file_path="test/Main.java"
     directory="test"
     class_name="Main"
 
-    print("Compiling...")
-    compile_result=compile_java(file_path)
+    MAX_ATTEMPTS = 5
 
-    if compile_result.returncode!=0:
-        print("Compilation Failed")
+    attempt = 0
+
+    while attempt < MAX_ATTEMPTS:
+        print(f"\n--- Attempt {attempt + 1} ---")
+
+        compile_result = compile_java(file_path)
+
+        if compile_result.returncode == 0:
+            print("✅ Compilation Successful!")
+            break
+
+        print("❌ Compilation Failed")
+
         parsed = parse_compile_error(compile_result.stderr)
-        print("\n--- PARSED COMPILE ERROR ---")
-        print(parsed)
-        if parsed:
-            context = extract_context(parsed["path"], parsed["line"])
-            print("\n--- CODE CONTEXT (COMPILE ERROR) ---")
-            for line in context:
-                print(line)
 
-            fix = generate_fix(parsed, context)
+        if not parsed:
+            print("Could not parse error")
+            break
 
-            print("\n--- AI FIX ---")
-            print(fix)
-        return
-    else:
-        print("Compilation Successful")
+        context = extract_context(file_path, parsed["line"])
 
-    print("\nRunning...")
-    run_result=run_java(class_name, directory)
+        print("\n--- CODE CONTEXT ---")
+        for line in context:
+            print(line)
 
-    if run_result.returncode!=0:
-        print("Running Failed")
-        parsed = parse_runtime_error(run_result.stderr)
-        print("\n--- PARSED RUNTIME ERROR ---")
-        print(parsed)
-        if parsed:
-            base_dir = os.path.dirname(file_path) or "."
-            full_path = os.path.join(base_dir, parsed["file"])
+        fix = generate_fix(parsed, context)
 
-            context = extract_context(full_path, parsed["line"])
-            print("\n--- CODE CONTEXT (RUNTIME ERROR) ---")
-            for line in context:
-                print(line)
+        print("\n--- AI FIX ---")
+        print(fix)
 
-            fix = generate_fix(parsed, context)
+        line_no, new_code = parse_fix(fix)
 
-            print("\n--- AI FIX ---")
-            print(fix)
-    else:
-        print("Running Successful")
+        if not line_no:
+            print("Invalid fix format")
+            break
 
-    print("\n--- OUTPUT ---")
-    print(run_result.stdout)
+        apply_fix(file_path, line_no, new_code)
 
-    print("\n--- ERRORS ---")
-    print(run_result.stderr)
+        attempt += 1
+        last_fix = None
+
+        if fix == last_fix:
+            print("⚠️ Same fix repeating, stopping")
+            break
+
+        last_fix = fix
 
 if __name__=="__main__":
     main()
