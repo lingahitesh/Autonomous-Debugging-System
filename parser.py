@@ -16,6 +16,7 @@ def parse_runtime_error(stderr):
         error_info["file"]=match_line.group(1)
         error_info["path"]=full_path
         error_info["line"]=int(match_line.group(2))
+        error_info["message"] = stderr.strip()
 
     return error_info
 

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8ebcf328-d521-46ed-955d-3ff77c4b19ba" name="Changes" comment="Day3">
+    <list default="true" id="8ebcf328-d521-46ed-955d-3ff77c4b19ba" name="Changes" comment="Day4">
+      <change afterPath="$PROJECT_DIR$/fixer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ai.py" beforeDir="false" afterPath="$PROJECT_DIR$/ai.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/parser.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/runner.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/Main.java" afterDir="false" />
     </list>
@@ -108,13 +110,22 @@
       <option name="project" value="LOCAL" />
       <updated>1776541096109</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Day4">
+      <option name="closed" value="true" />
+      <created>1776771409876</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1776771409877</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Day1" />
     <MESSAGE value="Day2" />
     <MESSAGE value="Day3" />
-    <option name="LAST_COMMIT_MESSAGE" value="Day3" />
+    <MESSAGE value="Day4" />
+    <option name="LAST_COMMIT_MESSAGE" value="Day4" />
   </component>
 </project>

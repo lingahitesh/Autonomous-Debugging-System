@@ -1,60 +1,42 @@
 import subprocess
 import os
-from parser import parse_runtime_error
-from parser import parse_compile_error
+from parser import parse_runtime_error, parse_compile_error
 from context import extract_context
-from ai import generate_fix
+from ai import generate_fix, verify_fix
+from fixer import parse_fix, apply_fix
 
 def compile_java(file_path):
-    result=subprocess.run(
+    return subprocess.run(
         ["javac", file_path],
         capture_output=True,
         text=True
     )
-    return result
+
 
 def run_java(class_name, cwd):
-    result=subprocess.run(
+    return subprocess.run(
         ["java", class_name],
         capture_output=True,
         text=True,
         cwd=cwd
     )
-    return result
 
-def parse_fix(fix):
-    try:
-        line_no, code = fix.split(":", 1)
-        return int(line_no.strip()), code.strip()
-    except:
-        return None, None
-
-def apply_fix(file_path, line_no, new_code):
-    with open(file_path, "r") as f:
-        lines = f.readlines()
-
-    old_line = lines[line_no - 1]
-
-    # extract indentation (spaces/tabs at start)
-    indentation = old_line[:len(old_line) - len(old_line.lstrip())]
-
-    # apply fix with same indentation
-    lines[line_no - 1] = indentation + new_code + "\n"
-
-    with open(file_path, "w") as f:
-        f.writelines(lines)
 
 def main():
-    file_path="test/Main.java"
-    directory="test"
-    class_name="Main"
+    file_path = "test/Main.java"
+    directory = "test"
+    class_name = "Main"
 
-    MAX_ATTEMPTS = 5
+    max_attempts = 5
 
+    # =========================
+    # COMPILE LOOP
+    # =========================
     attempt = 0
+    seen_fixes = set()
 
-    while attempt < MAX_ATTEMPTS:
-        print(f"\n--- Attempt {attempt + 1} ---")
+    while attempt < max_attempts:
+        print(f"\n--- Compile Attempt {attempt + 1} ---")
 
         compile_result = compile_java(file_path)
 
@@ -65,14 +47,13 @@ def main():
         print("❌ Compilation Failed")
 
         parsed = parse_compile_error(compile_result.stderr)
-
         if not parsed:
-            print("Could not parse error")
+            print("Could not parse compile error")
             break
 
         context = extract_context(file_path, parsed["line"])
 
-        print("\n--- CODE CONTEXT ---")
+        print("\n--- CODE CONTEXT (COMPILE ERROR) ---")
         for line in context:
             print(line)
 
@@ -83,20 +64,105 @@ def main():
 
         line_no, new_code = parse_fix(fix)
 
-        if not line_no:
+        if line_no is None or new_code is None:
             print("Invalid fix format")
             break
 
+        # 🔥 Prevent repeated fixes
+        if fix in seen_fixes:
+            print("⚠️ Fix already tried, stopping")
+            break
+        seen_fixes.add(fix)
+
+        # 🔥 Verify fix
+        verification = verify_fix(parsed, context, fix)
+
+        print("\n--- VERIFICATION ---")
+        print(verification)
+
+        if verification != "VALID":
+            print("⚠️ Verifier uncertain, continuing anyway...")
+
+        # 🔥 Apply fix
         apply_fix(file_path, line_no, new_code)
 
         attempt += 1
-        last_fix = None
 
-        if fix == last_fix:
-            print("⚠️ Same fix repeating, stopping")
+    # =========================
+    # RUN LOOP
+    # =========================
+    attempt = 0
+    seen_fixes = set()
+
+    while attempt < max_attempts:
+        print(f"\n--- Run Attempt {attempt + 1} ---")
+
+        run_result = run_java(class_name, directory)
+
+        if run_result.returncode == 0:
+            print("✅ Running Successful")
             break
 
-        last_fix = fix
+        print("❌ Running Failed")
 
-if __name__=="__main__":
+        parsed = parse_runtime_error(run_result.stderr)
+        if not parsed:
+            print("Could not parse runtime error")
+            break
+
+        base_dir = os.path.dirname(file_path) or "."
+        full_path = os.path.join(base_dir, parsed["file"])
+
+        context = extract_context(full_path, parsed["line"])
+
+        print("\n--- CODE CONTEXT (RUNTIME ERROR) ---")
+        for line in context:
+            print(line)
+
+        fix = generate_fix(parsed, context)
+
+        print("\n--- AI FIX ---")
+        print(fix)
+
+        line_no, new_code = parse_fix(fix)
+
+        if line_no is None or new_code is None:
+            print("Invalid fix format")
+            break
+
+        # 🔥 Prevent repeated fixes
+        if fix in seen_fixes:
+            print("⚠️ Fix already tried, stopping")
+            break
+        seen_fixes.add(fix)
+
+        # 🔥 Verify fix
+        verification = verify_fix(parsed, context, fix)
+
+        print("\n--- VERIFICATION ---")
+        print(verification)
+
+        if verification != "VALID":
+            print("⚠️ Verifier uncertain, continuing anyway...")
+
+        # 🔥 Apply fix to correct file
+        apply_fix(full_path, line_no, new_code)
+
+        # 🔥 Recompile after runtime fix
+        compile_result = compile_java(file_path)
+
+        if compile_result.returncode != 0:
+            print("⚠️ Fix broke compilation")
+            break
+
+        attempt += 1
+
+    print("\n--- OUTPUT ---")
+    print(run_java(class_name, directory).stdout)
+
+    print("\n--- ERRORS ---")
+    print(run_java(class_name, directory).stderr)
+
+
+if __name__ == "__main__":
     main()
