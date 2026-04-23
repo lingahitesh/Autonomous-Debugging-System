@@ -52,6 +52,8 @@ def generate_fix(error_info, context):
     - Do NOT modify other lines
     - Do NOT introduce unrelated changes
     - Replace unsafe or abrupt program termination with safe user-facing handling when possible
+    - If program does not terminate, identify problematic loops and ensure termination condition or add safe exit
+    - If the program does not terminate, analyze loop constructs (for, while)
     
     SEMANTIC RULES:
     - Do NOT change variable values or assignments unless absolutely necessary

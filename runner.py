@@ -5,6 +5,7 @@ from context import extract_context
 from ai import generate_fix, verify_fix
 from fixer import parse_fix, apply_fix
 
+
 def compile_java(file_path):
     return subprocess.run(
         ["javac", file_path],
@@ -14,13 +15,30 @@ def compile_java(file_path):
 
 
 def run_java(class_name, cwd):
-    return subprocess.run(
-        ["java", class_name],
-        capture_output=True,
-        text=True,
-        cwd=cwd
-    )
+    try:
+        process = subprocess.Popen(
+            ["java", class_name],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            cwd=cwd
+        )
 
+        try:
+            stdout, stderr = process.communicate(timeout=3)
+            return subprocess.CompletedProcess(
+                args=["java", class_name],
+                returncode=process.returncode,
+                stdout=stdout,
+                stderr=stderr
+            )
+        except subprocess.TimeoutExpired:
+            process.kill()  # 🔥 IMPORTANT
+            process.wait()  # 🔥 CLEANUP
+            return "TIMEOUT"
+
+    except Exception as e:
+        return None
 
 def main():
     file_path = "test/Main.java"
@@ -68,13 +86,11 @@ def main():
             print("Invalid fix format")
             break
 
-        # 🔥 Prevent repeated fixes
         if fix in seen_fixes:
             print("⚠️ Fix already tried, stopping")
             break
         seen_fixes.add(fix)
 
-        # 🔥 Verify fix
         verification = verify_fix(parsed, context, fix)
 
         print("\n--- VERIFICATION ---")
@@ -83,7 +99,6 @@ def main():
         if verification != "VALID":
             print("⚠️ Verifier uncertain, continuing anyway...")
 
-        # 🔥 Apply fix
         apply_fix(file_path, line_no, new_code)
 
         attempt += 1
@@ -99,21 +114,33 @@ def main():
 
         run_result = run_java(class_name, directory)
 
-        if run_result.returncode == 0:
-            print("✅ Running Successful")
-            break
+        # 🔥 FIX 1: Handle TIMEOUT BEFORE accessing returncode
+        if run_result == "TIMEOUT":
+            print("❌ Program Timeout (possible infinite loop)")
 
-        print("❌ Running Failed")
+            parsed = {
+                "message": "Program stuck in infinite loop. Check loop condition and update expression.",
+                "line": None,
+                "file": file_path  # 🔥 FIX 2: ensure file exists
+            }
 
-        parsed = parse_runtime_error(run_result.stderr)
-        if not parsed:
-            print("Could not parse runtime error")
-            break
+        else:
+            if run_result.returncode == 0:
+                print("✅ Running Successful")
+                break
+
+            print("❌ Running Failed")
+
+            parsed = parse_runtime_error(run_result.stderr)
+
+            if not parsed:
+                print("Could not parse runtime error")
+                break
 
         base_dir = os.path.dirname(file_path) or "."
-        full_path = os.path.join(base_dir, parsed["file"])
+        full_path = file_path
 
-        context = extract_context(full_path, parsed["line"])
+        context = extract_context(full_path, parsed.get("line"))
 
         print("\n--- CODE CONTEXT (RUNTIME ERROR) ---")
         for line in context:
@@ -130,13 +157,11 @@ def main():
             print("Invalid fix format")
             break
 
-        # 🔥 Prevent repeated fixes
         if fix in seen_fixes:
             print("⚠️ Fix already tried, stopping")
             break
         seen_fixes.add(fix)
 
-        # 🔥 Verify fix
         verification = verify_fix(parsed, context, fix)
 
         print("\n--- VERIFICATION ---")
@@ -145,10 +170,9 @@ def main():
         if verification != "VALID":
             print("⚠️ Verifier uncertain, continuing anyway...")
 
-        # 🔥 Apply fix to correct file
         apply_fix(full_path, line_no, new_code)
 
-        # 🔥 Recompile after runtime fix
+        # 🔥 Recompile after fix
         compile_result = compile_java(file_path)
 
         if compile_result.returncode != 0:
@@ -158,10 +182,14 @@ def main():
         attempt += 1
 
     print("\n--- OUTPUT ---")
-    print(run_java(class_name, directory).stdout)
+    final_run = run_java(class_name, directory)
+    if final_run != "TIMEOUT":
+        print(final_run.stdout)
 
-    print("\n--- ERRORS ---")
-    print(run_java(class_name, directory).stderr)
+        print("\n--- ERRORS ---")
+        print(final_run.stderr)
+    else:
+        print("Program still not terminating")
 
 
 if __name__ == "__main__":

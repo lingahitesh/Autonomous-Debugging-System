@@ -1,13 +1,17 @@
-def extract_context(file_path, error_line, window=3):
-    context=[]
+def extract_context(file_path, line, window=3):
+    with open(file_path, "r") as f:
+        lines = f.readlines()
 
-    with open(file_path,"r") as f:
-        lines=f.readlines()
+    if line is None:
+        # 🔥 return broader context (first 20 lines)
+        return [f"{i+1}: {lines[i].rstrip()}" for i in range(len(lines))]
 
-    start=max(0,error_line-window-1)
-    end=min(len(lines),error_line+window)
+    start = max(0, line - window - 1)
+    end = min(len(lines), line + window)
 
-    for i in range(start,end):
-        context.append(f"{i + 1}: {'>> ' if i + 1 == error_line else ''}{lines[i].strip()}")
+    context = []
+    for i in range(start, end):
+        prefix = ">> " if i == line - 1 else ""
+        context.append(f"{i+1}: {prefix}{lines[i].rstrip()}")
 
     return context
