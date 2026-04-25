@@ -6,13 +6,14 @@ from ai import generate_fix, verify_fix
 from fixer import parse_fix, apply_fix
 
 
-def compile_java(file_path):
+def compile_java(directory):
     return subprocess.run(
-        ["javac", file_path],
+        ["javac", "*.java"],
         capture_output=True,
-        text=True
+        text=True,
+        cwd=directory,
+        shell=True   # 🔥 needed for wildcard
     )
-
 
 def run_java(class_name, cwd):
     try:
@@ -56,7 +57,7 @@ def main():
     while attempt < max_attempts:
         print(f"\n--- Compile Attempt {attempt + 1} ---")
 
-        compile_result = compile_java(file_path)
+        compile_result = compile_java(directory)
 
         if compile_result.returncode == 0:
             print("✅ Compilation Successful!")
@@ -69,7 +70,10 @@ def main():
             print("Could not parse compile error")
             break
 
-        context = extract_context(file_path, parsed["line"])
+        base_dir = os.path.dirname(file_path)
+        full_path = os.path.join(base_dir, parsed["file"])
+
+        context = extract_context(full_path, parsed["line"])
 
         print("\n--- CODE CONTEXT (COMPILE ERROR) ---")
         for line in context:
@@ -99,7 +103,7 @@ def main():
         if verification != "VALID":
             print("⚠️ Verifier uncertain, continuing anyway...")
 
-        apply_fix(file_path, line_no, new_code)
+        apply_fix(full_path, line_no, new_code)
 
         attempt += 1
 
@@ -137,8 +141,8 @@ def main():
                 print("Could not parse runtime error")
                 break
 
-        base_dir = os.path.dirname(file_path) or "."
-        full_path = file_path
+        base_dir = os.path.dirname(file_path)
+        full_path = os.path.join(base_dir, parsed.get("file", os.path.basename(file_path)))
 
         context = extract_context(full_path, parsed.get("line"))
 
@@ -165,7 +169,8 @@ def main():
         verification = verify_fix(parsed, context, fix)
 
         print("\n--- VERIFICATION ---")
-        print(verification)
+        if verification== "VALID":
+            print(verification)
 
         if verification != "VALID":
             print("⚠️ Verifier uncertain, continuing anyway...")
@@ -173,7 +178,7 @@ def main():
         apply_fix(full_path, line_no, new_code)
 
         # 🔥 Recompile after fix
-        compile_result = compile_java(file_path)
+        compile_result = compile_java(full_path)
 
         if compile_result.returncode != 0:
             print("⚠️ Fix broke compilation")
