@@ -10,13 +10,8 @@ def apply_fix(file_path, line_no, new_code):
         lines = f.readlines()
 
     old_line = lines[line_no - 1]
-
-    # extract indentation (spaces/tabs at start)
     indentation = old_line[:len(old_line) - len(old_line.lstrip())]
-
-    # apply fix with same indentation
     lines[line_no - 1] = indentation + new_code + "\n"
 
     with open(file_path, "w") as f:
         f.writelines(lines)
-

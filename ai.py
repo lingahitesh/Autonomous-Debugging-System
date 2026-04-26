@@ -2,23 +2,15 @@ from dotenv import load_dotenv
 import os
 from groq import Groq
 
-# Load environment variables
 load_dotenv()
-
-# Initialize client
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
-
 
 def generate_fix(error_info, context):
     context_text = "\n".join(context)
-
-    # Safe extraction (prevents KeyError)
     error_message = error_info.get("message", "")
     error_type = error_info.get("type", "")
 
-    # Error-type aware guidance
-    extra_rule = ""
-
+    extra_rule=""
     if "ArithmeticException" in error_message or error_type == "ArithmeticException":
         extra_rule = "Ensure denominator is not zero before division."
     elif "NullPointerException" in error_message or error_type == "NullPointerException":
@@ -38,6 +30,9 @@ def generate_fix(error_info, context):
 
     Code:
     {context_text}
+
+    For your help:
+    {extra_rule}
 
     INSTRUCTIONS (follow internally, DO NOT output these steps):
     1. Identify the root cause of the error
@@ -87,7 +82,6 @@ def generate_fix(error_info, context):
         ],
         temperature=0
     )
-
     return response.choices[0].message.content.strip()
 
 def verify_fix(error_info, context, fix):
@@ -95,7 +89,6 @@ def verify_fix(error_info, context, fix):
 
     prompt = f"""
 You are a strict validator.
-
 Given an error and a proposed fix, determine if the fix correctly resolves the issue.
 
 Error:
@@ -127,5 +120,4 @@ Answer:
         ],
         temperature=0
     )
-
     return response.choices[0].message.content.strip()

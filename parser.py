@@ -9,22 +9,20 @@ def parse_runtime_error(stderr):
     if match_type:
         error_info["type"]=match_type.group(1)
 
-    # Extract file and line number
     match_line = re.search(r'\((.*\.java):(\d+)\)', stderr)
     error_info["message"] = stderr.strip()
+
     if match_line:
         file_name = os.path.basename(match_line.group(1))
-
         error_info["file"] = file_name
         error_info["line"] = int(match_line.group(2))
-
     return error_info
 
 def parse_compile_error(stderr):
     error_info={}
-
     match=re.search(r'(.*\.java):(\d+): error: (.*)',stderr)
     error_info["message"]=match.group(3)
+
     if match:
         full_path=os.path.normpath(match.group(1))
         error_info["file"]=os.path.basename(full_path)

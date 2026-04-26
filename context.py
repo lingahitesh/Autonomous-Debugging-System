@@ -2,10 +2,7 @@ def extract_context(file_path, line, window=3):
     with open(file_path, "r") as f:
         lines = f.readlines()
 
-    if line is None:
-        # 🔥 return broader context (first 20 lines)
-        return [f"{i+1}: {lines[i].rstrip()}" for i in range(len(lines))]
-
+    if line is None:return [f"{i+1}: {lines[i].rstrip()}" for i in range(len(lines))]
     start = max(0, line - window - 1)
     end = min(len(lines), line + window)
 
