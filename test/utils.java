@@ -1,8 +1,16 @@
 public class utils
 {
-    public static void print()
+    public int sumToN(int n)
     {
-        int x = 0;
-        System.out.println(x);
+        int sum = 0;
+        for(int i = 1; i <= n; i--)
+        {
+            sum += i;
+        }
+        return sum;
+    }
+    public int average(int sum, int n)
+    {
+        return sum / n;
     }
 }

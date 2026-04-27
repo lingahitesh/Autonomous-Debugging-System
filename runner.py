@@ -112,7 +112,7 @@ def main():
             parsed = {
                 "message": "Program stuck in infinite loop. Check loop condition and update expression.",
                 "line": None,
-                "file": file_path  # 🔥 FIX 2: ensure file exists
+                "file": os.path.basename(file_path)  # 🔥 FIX 2: ensure file exists
             }
         else:
             if run_result.returncode == 0:
@@ -158,7 +158,7 @@ def main():
             print("⚠️ Verifier uncertain, continuing anyway...")
 
         apply_fix(full_path, line_no, new_code)
-        compile_result = compile_java(full_path)
+        compile_result = compile_java(directory)
 
         if compile_result.returncode != 0:
             print("⚠️ Fix broke compilation")
