@@ -4,6 +4,8 @@ from parser import parse_runtime_error, parse_compile_error
 from context import extract_context, find_related_files_recursive
 from ai import generate_fix, verify_fix
 from fixer import parse_fix, apply_fix
+from scorer import score_file
+
 
 def compile_java(directory):
     return subprocess.run(
@@ -11,8 +13,9 @@ def compile_java(directory):
         capture_output=True,
         text=True,
         cwd=directory,
-        shell=True   # 🔥 needed for wildcard
+        shell=True
     )
+
 
 def run_java(class_name, cwd):
     try:
@@ -32,16 +35,17 @@ def run_java(class_name, cwd):
                 stderr=stderr
             )
         except subprocess.TimeoutExpired:
-            process.kill()  # 🔥 IMPORTANT
-            process.wait()  # 🔥 CLEANUP
+            process.kill()
+            process.wait()
             return subprocess.CompletedProcess(
                 args=["java", class_name],
                 returncode=-1,
                 stdout="",
                 stderr="TIMEOUT"
             )
-    except Exception as e:
+    except Exception:
         return None
+
 
 def is_output_valid(output):
     if not output.strip():
@@ -55,15 +59,13 @@ def is_output_valid(output):
 
         try:
             value = int(line.split(":")[1].strip())
-
-            # sanity check (adjust range if needed)
             if value < 0 or value > 1000:
                 return False
-
         except:
             return False
 
     return True
+
 
 def main():
     file_path = "test/Main.java"
@@ -127,8 +129,11 @@ def main():
 
         for file_name, line_no, new_code in fixes:
             target_file = file_name if file_name else parsed.get("file")
-
             target_path = os.path.join(base_dir, target_file)
+
+            if not os.path.exists(target_path):
+                print(f"⚠️ Skipping invalid target file: {target_file}")
+                continue
 
             apply_fix(target_path, line_no, new_code)
 
@@ -149,7 +154,7 @@ def main():
             parsed = {
                 "message": "Program stuck in infinite loop. Check loop condition and update expression.",
                 "line": None,
-                "file": os.path.basename(file_path)  # 🔥 FIX 2: ensure file exists
+                "file": os.path.basename(file_path)
             }
         else:
             if run_result.returncode == 0 and is_output_valid(run_result.stdout):
@@ -172,10 +177,13 @@ def main():
                 break
 
         base_dir = os.path.dirname(file_path)
-        full_path = os.path.join(base_dir, parsed.get("file", os.path.basename(file_path)))
         entry_file = parsed.get("file", os.path.basename(file_path))
 
+        # 🔥 CLEAN CONTEXT BUILD
         files = find_related_files_recursive(entry_file, base_dir)
+        files = sorted(files, key=lambda f: score_file(f, entry_file), reverse=True)
+
+        print("\n[DEBUG] File priority order:", files)
 
         context = []
 
@@ -184,9 +192,9 @@ def main():
             context += [f"\n--- {file} ---"]
             context += extract_context(path, None)
 
-        # optional token control
         if len(context) > 300:
             context = context[-300:]
+
         print("\n--- CODE CONTEXT (RUNTIME ERROR) ---")
         for line in context:
             print(line)
@@ -220,8 +228,11 @@ def main():
 
         for file_name, line_no, new_code in fixes:
             target_file = file_name if file_name else parsed.get("file")
-
             target_path = os.path.join(base_dir, target_file)
+
+            if not os.path.exists(target_path):
+                print(f"⚠️ Skipping invalid target file: {target_file}")
+                continue
 
             apply_fix(target_path, line_no, new_code)
 
@@ -230,16 +241,19 @@ def main():
         if compile_result.returncode != 0:
             print("⚠️ Fix broke compilation")
             break
+
         attempt += 1
 
     print("\n--- OUTPUT ---")
     final_run = run_java(class_name, directory)
-    if final_run.returncode!=(-1):
+
+    if final_run.returncode == 0:
         print(final_run.stdout)
         print("\n--- ERRORS ---")
         print(final_run.stderr)
     else:
         print("Program still not terminating")
+
 
 if __name__ == "__main__":
     main()
