@@ -5,7 +5,7 @@ from context import extract_context, find_related_files_recursive
 from ai import generate_fix, verify_fix
 from fixer import parse_fix, apply_fix
 from scorer import score_file
-
+from strategy import choose_strategy
 
 def compile_java(directory):
     return subprocess.run(
@@ -102,7 +102,10 @@ def main():
         for line in context:
             print(line)
 
-        fix = generate_fix(parsed, context)
+        strategy = choose_strategy(parsed)
+        print("\n[DEBUG] Strategy:", strategy)
+        fix = generate_fix(parsed, context, strategy)
+
         print("\n--- AI FIX ---")
         print(fix)
 
@@ -199,7 +202,9 @@ def main():
         for line in context:
             print(line)
 
-        fix = generate_fix(parsed, context)
+        strategy = choose_strategy(parsed)
+        print("\n[DEBUG] Strategy:", strategy)
+        fix = generate_fix(parsed, context, strategy)
         print("\n--- AI FIX ---")
         print(fix)
 
