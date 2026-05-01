@@ -1,7 +1,7 @@
 import subprocess
 import os
 from parser import parse_runtime_error, parse_compile_error
-from context import extract_context, find_related_files_recursive
+from context import extract_context, find_related_files_recursive, extract_suspicious_region
 from ai import generate_fix, verify_fix
 from fixer import parse_fix, apply_fix
 from scorer import score_file
@@ -15,7 +15,6 @@ def compile_java(directory):
         cwd=directory,
         shell=True
     )
-
 
 def run_java(class_name, cwd):
     try:
@@ -46,7 +45,6 @@ def run_java(class_name, cwd):
     except Exception:
         return None
 
-
 def is_output_valid(output):
     if not output.strip():
         return False
@@ -65,7 +63,6 @@ def is_output_valid(output):
             return False
 
     return True
-
 
 def main():
     file_path = "test/Main.java"
@@ -120,7 +117,6 @@ def main():
             break
 
         seen_fixes.add(fix)
-
         verification = verify_fix(parsed, context, fix)
         print("\n--- VERIFICATION ---")
         print(verification)
@@ -181,11 +177,9 @@ def main():
 
         base_dir = os.path.dirname(file_path)
         entry_file = parsed.get("file", os.path.basename(file_path))
-
         # 🔥 CLEAN CONTEXT BUILD
         files = find_related_files_recursive(entry_file, base_dir)
         files = sorted(files, key=lambda f: score_file(f, entry_file), reverse=True)
-
         print("\n[DEBUG] File priority order:", files)
 
         context = []
@@ -193,7 +187,12 @@ def main():
         for file in files:
             path = os.path.join(base_dir, file)
             context += [f"\n--- {file} ---"]
-            context += extract_context(path, None)
+            region = extract_suspicious_region(path)
+
+            if region:
+                context += region
+            else:
+                context += extract_context(path, None)
 
         if len(context) > 300:
             context = context[-300:]
@@ -219,7 +218,6 @@ def main():
             break
 
         seen_fixes.add(fix)
-
         verification = verify_fix(parsed, context, fix)
 
         print("\n--- VERIFICATION ---")
@@ -258,7 +256,6 @@ def main():
         print(final_run.stderr)
     else:
         print("Program still not terminating")
-
 
 if __name__ == "__main__":
     main()

@@ -8,6 +8,57 @@ def get_project_classes(base_dir):
         if f.endswith(".java")
     }
 
+import re
+
+def extract_suspicious_region(file_path, window=2):
+    with open(file_path, "r") as f:
+        lines = f.readlines()
+
+    patterns = [
+        r'\bfor\s*\(',
+        r'\bwhile\s*\(',
+        r'/',
+        r'\breturn\b',
+        r'\bnew\b'
+    ]
+
+    ranges = []
+
+    for i, line in enumerate(lines):
+        for pattern in patterns:
+            if re.search(pattern, line):
+                start = max(0, i - window)
+                end = min(len(lines) - 1, i + window)
+
+                ranges.append((start, end))
+                break
+
+    if not ranges:
+        return []
+
+    # merge overlapping ranges
+    ranges.sort()
+
+    merged = [ranges[0]]
+
+    for start, end in ranges[1:]:
+        last_start, last_end = merged[-1]
+
+        if start <= last_end + 1:
+            merged[-1] = (last_start, max(last_end, end))
+        else:
+            merged.append((start, end))
+
+    result = []
+
+    for start, end in merged:
+        for i in range(start, end + 1):
+            result.append(
+                f"{i+1}: {lines[i].rstrip()}"
+            )
+
+    return result
+
 def find_related_files_recursive(entry_file, base_dir, max_depth=3):
     visited=set()
     queue=[entry_file]

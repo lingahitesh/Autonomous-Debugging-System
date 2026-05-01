@@ -36,21 +36,31 @@ def apply_fix(file_path, line_no, new_code):
     with open(file_path, "r") as f:
         lines = f.readlines()
 
-    # If line exists → replace
+    new_code = new_code.strip()
+
+    # Replace existing line
     if 0 < line_no <= len(lines):
         old_line = lines[line_no - 1]
+
         indentation = old_line[:len(old_line) - len(old_line.lstrip())]
+
         lines[line_no - 1] = indentation + new_code + "\n"
 
-    # If line is beyond file → append
-    elif line_no == len(lines) + 1:
-        lines.append(new_code + "\n")
-
-    # If line is way beyond → pad + append
+    # Add new line (or AI gives line beyond file)
     else:
-        while len(lines) < line_no - 1:
-            lines.append("\n")
-        lines.append(new_code + "\n")
+        indentation = ""
+
+        if lines:
+            last_line = lines[-1]
+
+            # Match indentation of previous line
+            indentation = last_line[:len(last_line) - len(last_line.lstrip())]
+
+            # If adding closing brace after another brace, reduce indent
+            if new_code == "}" and last_line.strip() == "}":
+                indentation = indentation[:-4] if len(indentation) >= 4 else ""
+
+        lines.append(indentation + new_code + "\n")
 
     with open(file_path, "w") as f:
         f.writelines(lines)

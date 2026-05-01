@@ -81,10 +81,11 @@ VALID
 or
 INVALID
 
-Invalid if:
-- error remains
-- logic is broken
-- fix repeats failed pattern
+INVALID if:
+- the original error would still occur
+- the fix breaks program logic
+- the fix repeats a previously failed pattern
+- the fix does not resolve the root cause
 """
 
     response=client.chat.completions.create(
