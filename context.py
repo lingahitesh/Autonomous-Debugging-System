@@ -36,9 +36,7 @@ def extract_suspicious_region(file_path, window=2):
     if not ranges:
         return []
 
-    # merge overlapping ranges
     ranges.sort()
-
     merged = [ranges[0]]
 
     for start, end in ranges[1:]:
@@ -48,7 +46,6 @@ def extract_suspicious_region(file_path, window=2):
             merged[-1] = (last_start, max(last_end, end))
         else:
             merged.append((start, end))
-
     result = []
 
     for start, end in merged:
@@ -62,7 +59,6 @@ def extract_suspicious_region(file_path, window=2):
 def find_related_files_recursive(entry_file, base_dir, max_depth=3):
     visited=set()
     queue=[entry_file]
-
     depth=0
 
     while queue and depth<max_depth:
@@ -82,10 +78,7 @@ def find_related_files_recursive(entry_file, base_dir, max_depth=3):
                 code=f.read()
 
             project_classes = get_project_classes(base_dir)
-
             matches = set()
-
-            # capture all identifiers
             matches.update(re.findall(r'\b([A-Za-z_]\w*)\b', code))
 
             for cls in matches:

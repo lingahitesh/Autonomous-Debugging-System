@@ -177,7 +177,6 @@ def main():
 
         base_dir = os.path.dirname(file_path)
         entry_file = parsed.get("file", os.path.basename(file_path))
-        # 🔥 CLEAN CONTEXT BUILD
         files = find_related_files_recursive(entry_file, base_dir)
         files = sorted(files, key=lambda f: score_file(f, entry_file), reverse=True)
         print("\n[DEBUG] File priority order:", files)

@@ -38,7 +38,6 @@ def apply_fix(file_path, line_no, new_code):
 
     new_code = new_code.strip()
 
-    # Replace existing line
     if 0 < line_no <= len(lines):
         old_line = lines[line_no - 1]
 
@@ -46,17 +45,14 @@ def apply_fix(file_path, line_no, new_code):
 
         lines[line_no - 1] = indentation + new_code + "\n"
 
-    # Add new line (or AI gives line beyond file)
     else:
         indentation = ""
 
         if lines:
             last_line = lines[-1]
 
-            # Match indentation of previous line
             indentation = last_line[:len(last_line) - len(last_line.lstrip())]
 
-            # If adding closing brace after another brace, reduce indent
             if new_code == "}" and last_line.strip() == "}":
                 indentation = indentation[:-4] if len(indentation) >= 4 else ""
 
