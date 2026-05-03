@@ -36,27 +36,46 @@ def apply_fix(file_path, line_no, new_code):
     with open(file_path, "r") as f:
         lines = f.readlines()
 
+    lines = [line.rstrip("\n") for line in lines]
+
+    while lines and not lines[-1].strip():
+        lines.pop()
+
     new_code = new_code.strip()
 
+    def get_indent(text):
+        return text[:len(text) - len(text.lstrip())]
+
+    # Replace existing line
     if 0 < line_no <= len(lines):
         old_line = lines[line_no - 1]
 
-        indentation = old_line[:len(old_line) - len(old_line.lstrip())]
+        indentation = get_indent(old_line)
 
-        lines[line_no - 1] = indentation + new_code + "\n"
+        if new_code.startswith("}"):
+            indentation = (
+                indentation[:-4]
+                if len(indentation) >= 4
+                else ""
+            )
 
+        lines[line_no - 1] = indentation + new_code
+
+    # Append
     else:
         indentation = ""
 
         if lines:
-            last_line = lines[-1]
+            indentation = get_indent(lines[-1])
 
-            indentation = last_line[:len(last_line) - len(last_line.lstrip())]
+            if new_code.startswith("}"):
+                indentation = (
+                    indentation[:-4]
+                    if len(indentation) >= 4
+                    else ""
+                )
 
-            if new_code == "}" and last_line.strip() == "}":
-                indentation = indentation[:-4] if len(indentation) >= 4 else ""
-
-        lines.append(indentation + new_code + "\n")
+        lines.append(indentation + new_code)
 
     with open(file_path, "w") as f:
-        f.writelines(lines)
+        f.write("\n".join(lines) + "\n")

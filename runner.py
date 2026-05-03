@@ -6,6 +6,24 @@ from ai import generate_fix, verify_fix
 from fixer import parse_fix, apply_fix
 from scorer import score_file
 from strategy import choose_strategy
+from memory import remember_fix, recall_fix
+
+def build_error_keys(parsed, strategy):
+    message = parsed.get("message", "").lower()
+    file_name = parsed.get("file", "unknown")
+    line = parsed.get("line", "x")
+
+    if "timeout" in message:
+        error_type = "timeout"
+    elif "end of file" in message:
+        error_type = "eof"
+    else:
+        error_type = "generic"
+
+    local_key = f"{file_name}_{line}_{error_type}_{strategy}"
+    global_key = f"{error_type}_{strategy}"
+
+    return local_key, global_key
 
 def compile_java(directory):
     return subprocess.run(
@@ -101,10 +119,19 @@ def main():
 
         strategy = choose_strategy(parsed)
         print("\n[DEBUG] Strategy:", strategy)
-        fix = generate_fix(parsed, context, strategy)
+        local_key, global_key = build_error_keys(parsed, strategy)
 
-        print("\n--- AI FIX ---")
-        print(fix)
+        fix = recall_fix(local_key)
+
+        if not fix and ("end of file" in parsed.get("message", "").lower()):
+            fix = recall_fix(global_key)
+
+        if fix:
+            print("\n[MEMORY] Reusing known fix")
+        else:
+            fix = generate_fix(parsed, context, strategy)
+            print("\n--- AI FIX ---")
+            print(fix)
 
         fixes = parse_fix(fix)
 
@@ -112,11 +139,13 @@ def main():
             print("Invalid fix format")
             break
 
-        if fix.strip() in seen_fixes:
+        fix_signature = f"{local_key}:{fix.strip()}"
+
+        if fix_signature in seen_fixes:
             print("⚠️ Fix already tried, stopping")
             break
 
-        seen_fixes.add(fix)
+        seen_fixes.add(fix_signature)
         verification = verify_fix(parsed, context, fix)
         print("\n--- VERIFICATION ---")
         print(verification)
@@ -125,6 +154,9 @@ def main():
             print("❌ Fix rejected by verifier")
             attempt += 1
             continue
+        else:
+            remember_fix(local_key, fix)
+            remember_fix(global_key, fix)
 
         for file_name, line_no, new_code in fixes:
             target_file = file_name if file_name else parsed.get("file")
@@ -202,9 +234,18 @@ def main():
 
         strategy = choose_strategy(parsed)
         print("\n[DEBUG] Strategy:", strategy)
-        fix = generate_fix(parsed, context, strategy)
-        print("\n--- AI FIX ---")
-        print(fix)
+        local_key, global_key = build_error_keys(parsed, strategy)
+        fix = recall_fix(local_key)
+
+        if not fix and ("end of file" in parsed.get("message", "").lower()):
+            fix = recall_fix(global_key)
+
+        if fix:
+            print("\n[MEMORY] Reusing known fix")
+        else:
+            fix = generate_fix(parsed, context, strategy)
+            print("\n--- AI FIX ---")
+            print(fix)
 
         fixes = parse_fix(fix)
 
@@ -212,18 +253,21 @@ def main():
             print("Invalid fix format")
             break
 
-        if fix.strip() in seen_fixes:
+        fix_signature = f"{local_key}:{fix.strip()}"
+
+        if fix_signature in seen_fixes:
             print("⚠️ Fix already tried, stopping")
             break
 
-        seen_fixes.add(fix)
+        seen_fixes.add(fix_signature)
         verification = verify_fix(parsed, context, fix)
 
         print("\n--- VERIFICATION ---")
         if verification == "VALID":
             print(verification)
-
-        if verification != "VALID":
+            remember_fix(local_key, fix)
+            remember_fix(global_key, fix)
+        else:
             print("❌ Fix rejected")
             attempt += 1
             continue
