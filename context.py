@@ -29,7 +29,6 @@ def extract_suspicious_region(file_path, window=2):
             if re.search(pattern, line):
                 start = max(0, i - window)
                 end = min(len(lines) - 1, i + window)
-
                 ranges.append((start, end))
                 break
 
@@ -99,8 +98,8 @@ def extract_context(file_path, line, window=3):
     if line is None:return [f"{i+1}: {lines[i].rstrip()}" for i in range(len(lines))]
     start = max(0, line - window - 1)
     end = min(len(lines), line + window)
-
     context = []
+
     for i in range(start, end):
         prefix = ">> " if i == line - 1 else ""
         context.append(f"{i+1}: {prefix}{lines[i].rstrip()}")

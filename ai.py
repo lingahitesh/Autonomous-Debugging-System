@@ -61,8 +61,6 @@ END_FIX
 
     return response.choices[0].message.content.strip()
 
-
-
 def verify_fix(error_info, context, fix):
     context_text="\n".join(context)
 

@@ -46,7 +46,6 @@ def apply_fix(file_path, line_no, new_code):
     def get_indent(text):
         return text[:len(text) - len(text.lstrip())]
 
-    # Replace existing line
     if 0 < line_no <= len(lines):
         old_line = lines[line_no - 1]
 
@@ -61,7 +60,6 @@ def apply_fix(file_path, line_no, new_code):
 
         lines[line_no - 1] = indentation + new_code
 
-    # Append
     else:
         indentation = ""
 
