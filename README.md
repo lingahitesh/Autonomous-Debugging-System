@@ -10,17 +10,19 @@ The goal is not just generating code fixes, but identifying the actual root caus
 
 ## Structure
 
-Autonomous-Debugging-System/
-├── runner.py          # Main execution loop
-├── ai.py              # LLM fix generation + verification
-├── parser.py          # Compile/runtime error parsing
-├── fixer.py           # Patch parsing + code edits
-├── memory.py          # Local/global fix memory
-├── strategy.py        # Repair strategy selection
-├── scorer.py          # File prioritization
-├── context.py         # Multi-file traversal + context extraction
-├── test/              # Broken Java test cases
+<pre>
+Autonomous-Debugging-System/  
+├── runner.py          # Main execution loop  
+├── ai.py              # LLM fix generation + verification  
+├── parser.py          # Compile/runtime error parsing  
+├── fixer.py           # Patch parsing + code edits  
+├── memory.py          # Local/global fix memory  
+├── strategy.py        # Repair strategy selection  
+├── scorer.py          # File prioritization  
+├── context.py         # Multi-file traversal + context extraction  
+├── test/              # Broken Java test cases  
 └── README.md
+</pre>
 
 ## Core Features
 
@@ -57,10 +59,10 @@ Until:
 
 Stores successful fixes using:
 
-#### Local Memory
+#### **Local Memory -**
 Exact file + line + error context
 
-#### Global Memory
+#### **Global Memory -**
 Reusable structural patterns such as:
 
 * Missing braces
@@ -151,13 +153,13 @@ After every patch:
 
 ## Current Capabilities
 
-✔ Multi-file dependency traversal
-✔ Runtime + compile-time debugging
-✔ Recursive file prioritization
-✔ Incremental compilation
-✔ Fix verification
-✔ Memory-based repair reuse
-✔ Formatting-preserving patches
+✔ Multi-file dependency traversal  
+✔ Runtime + compile-time debugging  
+✔ Recursive file prioritization  
+✔ Incremental compilation  
+✔ Fix verification  
+✔ Memory-based repair reuse  
+✔ Formatting-preserving patches  
 
 ## Quick Setup
 
