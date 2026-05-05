@@ -1,6 +1,8 @@
 {
-  "eof_general": "15: }",
+  "eof_general": "8: }",
   "Main.java_7_eof_general": "8: }",
   "utils.java_14_eof_general": "15: }",
-  "Main.java_8_eof_general": "15: }"
+  "Main.java_8_eof_general": "15: }",
+  "Main.java_None_generic_logic": "START_FIX\nutils.java:6: for(int i = 1; i <= n; i++)\nEND_FIX",
+  "generic_logic": "START_FIX\nutils.java:6: for(int i = 1; i <= n; i++)\nEND_FIX"
 }

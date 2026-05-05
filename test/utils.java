@@ -1,4 +1,5 @@
-public class utils {
+public class utils
+{
     public int sumToN(int n)
     {
         int sum = 0;
@@ -8,6 +9,7 @@ public class utils {
         }
         return sum;
     }
+
     public int average(int sum, int n)
     {
         return sum / n;

@@ -25,6 +25,14 @@ def build_error_keys(parsed, strategy):
 
     return local_key, global_key
 
+def compile_single_java(java_file, directory):
+    return subprocess.run(
+        ["javac", java_file],
+        capture_output=True,
+        text=True,
+        cwd=directory
+    )
+
 def compile_java(directory):
     return subprocess.run(
         ["javac", "*.java"],
@@ -120,7 +128,6 @@ def main():
         strategy = choose_strategy(parsed)
         print("\n[DEBUG] Strategy:", strategy)
         local_key, global_key = build_error_keys(parsed, strategy)
-
         fix = recall_fix(local_key)
 
         if not fix and ("end of file" in parsed.get("message", "").lower()):
@@ -158,15 +165,34 @@ def main():
             remember_fix(local_key, fix)
             remember_fix(global_key, fix)
 
+        changed_files = set()
+
         for file_name, line_no, new_code in fixes:
             target_file = file_name if file_name else parsed.get("file")
             target_path = os.path.join(base_dir, target_file)
+            changed_files.add(target_file)
 
             if not os.path.exists(target_path):
                 print(f"⚠️ Skipping invalid target file: {target_file}")
                 continue
 
             apply_fix(target_path, line_no, new_code)
+
+        compile_failed = False
+
+        for changed_file in changed_files:
+            compile_result = compile_single_java(
+                changed_file,
+                directory
+            )
+
+            if compile_result.returncode != 0:
+                compile_failed = True
+                break
+
+        if compile_failed:
+            print("⚠️ Fix broke compilation")
+            break
 
         attempt += 1
 
@@ -272,9 +298,12 @@ def main():
             attempt += 1
             continue
 
+        changed_files = set()
+
         for file_name, line_no, new_code in fixes:
             target_file = file_name if file_name else parsed.get("file")
             target_path = os.path.join(base_dir, target_file)
+            changed_files.add(target_file)
 
             if not os.path.exists(target_path):
                 print(f"⚠️ Skipping invalid target file: {target_file}")
@@ -282,9 +311,19 @@ def main():
 
             apply_fix(target_path, line_no, new_code)
 
-        compile_result = compile_java(directory)
+        compile_failed = False
 
-        if compile_result.returncode != 0:
+        for changed_file in changed_files:
+            compile_result = compile_single_java(
+                changed_file,
+                directory
+            )
+
+            if compile_result.returncode != 0:
+                compile_failed = True
+                break
+
+        if compile_failed:
             print("⚠️ Fix broke compilation")
             break
 
