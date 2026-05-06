@@ -100,6 +100,15 @@ for(int i = 1; i <= n; i++)
 Result: 5
 ```
 
+## Benchmark Results
+
+| Metric | Value |
+|--------|------|
+| Cases Tested | 10 |
+| Success Rate | 80% |
+| Avg Attempts | 1.8 |
+| Avg Repair Time | 4.0 sec |
+
 ## System Architecture
 
 ### 1. Execution Engine

@@ -4,5 +4,12 @@
   "utils.java_14_eof_general": "15: }",
   "Main.java_8_eof_general": "15: }",
   "Main.java_None_generic_logic": "START_FIX\nutils.java:6: for(int i = 1; i <= n; i++)\nEND_FIX",
-  "generic_logic": "START_FIX\nutils.java:6: for(int i = 1; i <= n; i++)\nEND_FIX"
+  "generic_logic": "START_FIX\nutils.java:6: for(int i = 1; i <= n; i++)\nEND_FIX",
+  "utils.java_10_generic_safety": "START_FIX\nutils.java:6: for(int i = 1; i <= n; i++)\nutils.java:10: return sum;\nEND_FIX",
+  "generic_safety": "START_FIX\nutils.java:15: return n != 0 ? sum / n : 0;\nEND_FIX",
+  "utils.java_15_generic_safety": "START_FIX\nutils.java:15: return n != 0 ? sum / n : 0;\nEND_FIX",
+  "Calculator.java_6_generic_general": "START_FIX\nCalculator.java:5: utils helper = new utils();\nEND_FIX",
+  "generic_general": "5: int sum = 0;",
+  "utils.java_8_generic_general": "5: int sum = 0;",
+  "unknown_x_generic_general": "START_FIX\nutils.java:1: public class utils {\nutils.java:2:     public int sumToN(int n) {\nutils.java:3:         int sum = 0;\nutils.java:4:         for(int i = 1; i <= n; i++) {\nutils.java:5:             sum += i;\nutils.java:6:         }\nutils.java:7:         return sum;\nutils.java:8:     }\nutils.java:9:\nutils.java:10:     public int average(int sum, int n) {\nutils.java:11:         return sum / n;\nutils.java:12:     }\nutils.java:13: }\nCalculator.java:1: public class Calculator {\nCalculator.java:2:     public int compute(int n) {\nCalculator.java:3:         utils helper = new utils();\nCalculator.java:4:         int sum = helper.sumToN(n);\nCalculator.java:5:         int avg = helper.average(sum, n);\nCalculator.java:6:         return avg;\nCalculator.java:7:     }\nCalculator.java:8: }\nMain.java:1: public class Main {\nMain.java:2:     public static void main(String[] args) {\nMain.java:3:         int result = new Calculator().compute(10);\nMain.java:4:         System.out.println(\"Result: \" + result);\nMain.java:5:     }\nMain.java:6: }\nEND_FIX"
 }

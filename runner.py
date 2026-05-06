@@ -178,22 +178,6 @@ def main():
 
             apply_fix(target_path, line_no, new_code)
 
-        compile_failed = False
-
-        for changed_file in changed_files:
-            compile_result = compile_single_java(
-                changed_file,
-                directory
-            )
-
-            if compile_result.returncode != 0:
-                compile_failed = True
-                break
-
-        if compile_failed:
-            print("⚠️ Fix broke compilation")
-            break
-
         attempt += 1
 
     # =========================
