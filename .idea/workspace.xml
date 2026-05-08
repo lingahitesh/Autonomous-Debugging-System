@@ -2,41 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8ebcf328-d521-46ed-955d-3ff77c4b19ba" name="Changes" comment="Day11">
-      <change afterPath="$PROJECT_DIR$/benchmark/case10_nested_bug/Calculator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case10_nested_bug/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case10_nested_bug/utils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case1_missing_brace/Calculator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case1_missing_brace/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case1_missing_brace/utils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case2_infinite_loop/Calculator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case2_infinite_loop/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case2_infinite_loop/utils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case3_divide_by_zero/Calculator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case3_divide_by_zero/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case3_divide_by_zero/utils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case4_null_pointer/Calculator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case4_null_pointer/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case4_null_pointer/utils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case5_logic_error/Calculator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case5_logic_error/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case5_logic_error/utils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case6_off_by_one/Calculator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case6_off_by_one/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case6_off_by_one/utils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case7_wrong_return/Calculator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case7_wrong_return/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case7_wrong_return/utils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case8_incorrect_average/Calculator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case8_incorrect_average/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case8_incorrect_average/utils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case9_missing_init/Calculator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case9_missing_init/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark/case9_missing_init/utils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/benchmark_runner.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/benchmark_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/benchmark_runner.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/fix_memory.json" beforeDir="false" afterPath="$PROJECT_DIR$/fix_memory.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/fixer.py" beforeDir="false" afterPath="$PROJECT_DIR$/fixer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/runner.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

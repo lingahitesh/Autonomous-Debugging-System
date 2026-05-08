@@ -7,6 +7,9 @@ from fixer import parse_fix, apply_fix
 from scorer import score_file
 from strategy import choose_strategy
 from memory import remember_fix, recall_fix
+import difflib
+
+WORK_DIR = os.getenv("WORK_DIR", "test")
 
 def build_error_keys(parsed, strategy):
     message = parsed.get("message", "").lower()
@@ -24,6 +27,97 @@ def build_error_keys(parsed, strategy):
     global_key = f"{error_type}_{strategy}"
 
     return local_key, global_key
+
+def preview_fix(file_path, line_no, new_code):
+    with open(file_path, "r") as f:
+        original = f.readlines()
+
+    modified = original.copy()
+
+    if 0 < line_no <= len(modified):
+        indent = modified[line_no - 1][:len(modified[line_no - 1]) - len(modified[line_no - 1].lstrip())]
+        modified[line_no - 1] = indent + new_code + "\n"
+    else:
+        modified.append(new_code + "\n")
+
+    diff = difflib.unified_diff(
+        original,
+        modified,
+        fromfile="before",
+        tofile="after",
+        lineterm=""
+    )
+
+    return list(diff)
+
+def sanitize_fixes(fixes, parsed_file):
+    cleaned = []
+    seen = set()
+
+    for file_name, line_no, new_code in fixes:
+        target = file_name if file_name else parsed_file
+
+        # skip invalid stuff
+        if not target:
+            continue
+        if not isinstance(line_no, int):
+            continue
+        if not new_code or not new_code.strip():
+            continue
+
+        code = new_code.strip()
+
+        # skip comments
+        if code.startswith("//"):
+            continue
+
+        # remove duplicates
+        key = (target, line_no)
+        if key in seen:
+            continue
+        seen.add(key)
+
+        cleaned.append((target, line_no, code))
+
+    # 🔥 VERY IMPORTANT: limit number of fixes
+    return cleaned[:3]
+
+def confirm_and_apply(fixes, base_dir, auto_apply=False):
+    print("\n--- Proposed Fix ---")
+
+    previews = []
+
+    for file_name, line_no, new_code in fixes:
+        target_file = file_name
+        target_path = os.path.join(base_dir, target_file)
+
+        if not os.path.exists(target_path):
+            continue
+
+        diff = preview_fix(target_path, line_no, new_code)
+        previews.append((target_path, diff))
+
+        print(f"\n📄 {target_file}")
+        print("\n".join(diff))
+
+    if auto_apply:
+        choice = "y"
+    else:
+        choice = input("\nApply fix? (y/n): ").strip().lower()
+
+    if choice == "y":
+        for file_name, line_no, new_code in fixes:
+            target_file = file_name
+            target_path = os.path.join(base_dir, target_file)
+
+            if os.path.exists(target_path):
+                apply_fix(target_path, line_no, new_code)
+
+        print("✅ Fix applied")
+        return True
+
+    print("❌ Fix skipped")
+    return False
 
 def compile_single_java(java_file, directory):
     return subprocess.run(
@@ -91,8 +185,8 @@ def is_output_valid(output):
     return True
 
 def main():
-    file_path = "test/Main.java"
-    directory = "test"
+    file_path = os.path.join(WORK_DIR, "Main.java")
+    directory = WORK_DIR
     class_name = "Main"
     max_attempts = 5
 
@@ -153,22 +247,23 @@ def main():
             break
 
         seen_fixes.add(fix_signature)
+
         verification = verify_fix(parsed, context, fix)
         print("\n--- VERIFICATION ---")
         print(verification)
 
-        if verification != "VALID":
-            print("❌ Fix rejected by verifier")
-            attempt += 1
-            continue
-        else:
-            remember_fix(local_key, fix)
-            remember_fix(global_key, fix)
-
         changed_files = set()
 
-        for file_name, line_no, new_code in fixes:
-            target_file = file_name if file_name else parsed.get("file")
+        # 🔥 APPLY FIX FIRST
+        safe_fixes = sanitize_fixes(fixes, parsed.get("file"))
+
+        if not safe_fixes:
+            print("⚠️ No valid fixes")
+            attempt += 1
+            continue
+
+        for file_name, line_no, new_code in safe_fixes:
+            target_file = file_name
             target_path = os.path.join(base_dir, target_file)
             changed_files.add(target_file)
 
@@ -177,6 +272,19 @@ def main():
                 continue
 
             apply_fix(target_path, line_no, new_code)
+
+        # 🔥 NOW CHECK COMPILATION
+        temp_compile = compile_java(directory)
+
+        if temp_compile.returncode == 0:
+            print("✅ Fix accepted (compilation resolved)")
+            remember_fix(local_key, fix)
+            remember_fix(global_key, fix)
+        else:
+            if verification != "VALID":
+                print("❌ Fix rejected by verifier")
+                attempt += 1
+                continue
 
         attempt += 1
 
@@ -284,8 +392,15 @@ def main():
 
         changed_files = set()
 
-        for file_name, line_no, new_code in fixes:
-            target_file = file_name if file_name else parsed.get("file")
+        safe_fixes = sanitize_fixes(fixes, parsed.get("file"))
+
+        if not safe_fixes:
+            print("⚠️ No valid fixes")
+            attempt += 1
+            continue
+
+        for file_name, line_no, new_code in safe_fixes:
+            target_file = file_name
             target_path = os.path.join(base_dir, target_file)
             changed_files.add(target_file)
 

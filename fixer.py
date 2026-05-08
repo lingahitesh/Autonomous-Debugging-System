@@ -48,16 +48,7 @@ def apply_fix(file_path, line_no, new_code):
 
     if 0 < line_no <= len(lines):
         old_line = lines[line_no - 1]
-
         indentation = get_indent(old_line)
-
-        if new_code.startswith("}"):
-            indentation = (
-                indentation[:-4]
-                if len(indentation) >= 4
-                else ""
-            )
-
         lines[line_no - 1] = indentation + new_code
 
     else:
@@ -65,13 +56,6 @@ def apply_fix(file_path, line_no, new_code):
 
         if lines:
             indentation = get_indent(lines[-1])
-
-            if new_code.startswith("}"):
-                indentation = (
-                    indentation[:-4]
-                    if len(indentation) >= 4
-                    else ""
-                )
 
         lines.append(indentation + new_code)
 
