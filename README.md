@@ -11,17 +11,29 @@ The goal is not just generating code fixes, but identifying the actual root caus
 ## Structure
 
 <pre>
-Autonomous-Debugging-System/  
-├── runner.py          # Main execution loop  
-├── ai.py              # LLM fix generation + verification  
-├── parser.py          # Compile/runtime error parsing  
-├── fixer.py           # Patch parsing + code edits  
-├── memory.py          # Local/global fix memory  
-├── strategy.py        # Repair strategy selection  
-├── scorer.py          # File prioritization  
-├── context.py         # Multi-file traversal + context extraction  
-├── test/              # Broken Java test cases  
-└── README.md
+Autonomous-Debugging-System/
+├── core/
+│   ├── runner.py        # Orchestrates execution → diagnosis → fixing loop
+│   ├── ai.py            # LLM interaction: fix generation + verification
+│   ├── parser.py        # Parses compile/runtime errors into structured data
+│   ├── fixer.py         # Applies code patches safely (line-level edits)
+│
+├── engine/
+│   ├── context.py       # Multi-file traversal + relevant code extraction
+│   ├── strategy.py      # Determines repair strategy (syntax, logic, safety)
+│   ├── scorer.py        # Ranks files by likelihood of containing the bug
+│
+├── memory/
+│   ├── memory.py        # Stores & retrieves past fixes (local/global patterns)
+│
+├── benchmark/
+│   ├── case1_missing_brace/
+│   ├── case2_infinite_loop/
+│   ├── ...              # Standardized debugging test cases
+│
+├── test/                # Active working directory (mutable during runs)
+├── benchmark_runner.py  # Runs full benchmark suite + evaluation
+├── README.md
 </pre>
 
 ## Core Features

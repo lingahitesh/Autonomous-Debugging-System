@@ -79,7 +79,7 @@ def sanitize_fixes(fixes, parsed_file):
 
         cleaned.append((target, line_no, code))
 
-    # 🔥 VERY IMPORTANT: limit number of fixes
+    # VERY IMPORTANT: limit number of fixes
     return cleaned[:3]
 
 def confirm_and_apply(fixes, base_dir, auto_apply=False):
@@ -254,7 +254,7 @@ def main():
 
         changed_files = set()
 
-        # 🔥 APPLY FIX FIRST
+        # APPLY FIX FIRST
         safe_fixes = sanitize_fixes(fixes, parsed.get("file"))
 
         if not safe_fixes:
@@ -273,7 +273,7 @@ def main():
 
             apply_fix(target_path, line_no, new_code)
 
-        # 🔥 NOW CHECK COMPILATION
+        # NOW CHECK COMPILATION
         temp_compile = compile_java(directory)
 
         if temp_compile.returncode == 0:
