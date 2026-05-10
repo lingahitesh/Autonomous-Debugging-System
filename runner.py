@@ -272,6 +272,10 @@ def main():
                 continue
 
             apply_fix(target_path, line_no, new_code)
+            print("\n🔧 Applied Fix:")
+            print(f"File: {target_file}")
+            print(f"Line: {line_no}")
+            print(f"New Code: {new_code}")
 
         # NOW CHECK COMPILATION
         temp_compile = compile_java(directory)
@@ -409,6 +413,10 @@ def main():
                 continue
 
             apply_fix(target_path, line_no, new_code)
+            print("\n🔧 Applied Fix:")
+            print(f"File: {target_file}")
+            print(f"Line: {line_no}")
+            print(f"New Code: {new_code}")
 
         compile_failed = False
 
