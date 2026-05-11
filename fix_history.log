@@ -1,0 +1,4 @@
+Main.java:8 -> }
+utils.java:6 -> for(int i = 1; i <= n; i++)
+utils.java:8 -> sum += i;
+utils.java:15 -> return n != 0 ? sum / n : 0;

@@ -31,8 +31,9 @@ Autonomous-Debugging-System/
 │   ├── case2_infinite_loop/
 │   ├── ...              # Standardized debugging test cases
 │
-├── test/                # Active working directory (mutable during runs)
+├── test/                # Active working directory (mutable during runs) and contains backups
 ├── benchmark_runner.py  # Runs full benchmark suite + evaluation
+├── fix_history.log      # Maintains logs of changes made to test case
 ├── README.md
 </pre>
 
@@ -114,12 +115,12 @@ Result: 5
 
 ## Benchmark Results
 
-| Metric | Value |
-|--------|------|
-| Cases Tested | 10 |
-| Success Rate | 80% |
-| Avg Attempts | 1.8 |
-| Avg Repair Time | 4.0 sec |
+| Metric | Value    |
+|--------|----------|
+| Cases Tested | 10       |
+| Success Rate | 100%     |
+| Avg Attempts | 2.6      |
+| Avg Repair Time | ~2.2 sec |
 
 ## System Architecture
 
@@ -165,12 +166,21 @@ After every patch:
 
 ## Tech Stack
 
-* Python
-* Java
-* Groq API
-* Git
+* Python (core engine)
+* Java (target programs)
+* Groq API (LLM reasoning)
 * Subprocess execution
-* Regex-based code analysis
+* Regex-based analysis
+* Git (version control)
+
+## Safety Mechanisms
+
+To prevent code corruption during autonomous fixing:
+
+- Backup + rollback system for every applied patch
+- Compilation-based validation before accepting fixes
+- Duplicate fix detection to avoid infinite loops
+- Controlled patch application (limited edits per attempt)
 
 ## Current Capabilities
 
@@ -181,6 +191,13 @@ After every patch:
 ✔ Fix verification  
 ✔ Memory-based repair reuse  
 ✔ Formatting-preserving patches  
+
+## Limitations
+
+- Currently focused on small to medium Java codebases
+- Relies on LLM quality for fix generation
+- Limited semantic understanding without AST integration
+- Benchmark coverage is controlled and not yet large-scale
 
 ## Quick Setup
 

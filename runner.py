@@ -3,7 +3,7 @@ import os
 from parser import parse_runtime_error, parse_compile_error
 from context import extract_context, find_related_files_recursive, extract_suspicious_region
 from ai import generate_fix, verify_fix
-from fixer import parse_fix, apply_fix
+from fixer import parse_fix, apply_fix, undo_fix
 from scorer import score_file
 from strategy import choose_strategy
 from memory import remember_fix, recall_fix
@@ -272,6 +272,8 @@ def main():
                 continue
 
             apply_fix(target_path, line_no, new_code)
+            with open("fix_history.log", "a") as f:
+                f.write(f"{target_file}:{line_no} -> {new_code}\n")
             print("\n🔧 Applied Fix:")
             print(f"File: {target_file}")
             print(f"Line: {line_no}")
@@ -413,6 +415,8 @@ def main():
                 continue
 
             apply_fix(target_path, line_no, new_code)
+            with open("fix_history.log", "a") as f:
+                f.write(f"{target_file}:{line_no} -> {new_code}\n")
             print("\n🔧 Applied Fix:")
             print(f"File: {target_file}")
             print(f"Line: {line_no}")
@@ -431,7 +435,11 @@ def main():
                 break
 
         if compile_failed:
-            print("⚠️ Fix broke compilation")
+            print("⚠️ Fix broke compilation, undoing...")
+
+            for file in changed_files:
+                undo_fix(os.path.join(base_dir, file))
+
             break
 
         attempt += 1

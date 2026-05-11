@@ -1,3 +1,5 @@
+import os
+
 def parse_fix(fix):
     fixes=[]
 
@@ -33,8 +35,13 @@ def parse_fix(fix):
             return []
 
 def apply_fix(file_path, line_no, new_code):
+    backup_path = file_path + ".bak"
+
     with open(file_path, "r") as f:
         lines = f.readlines()
+
+    with open(backup_path, "w") as f:
+        f.writelines(lines)
 
     lines = [line.rstrip("\n") for line in lines]
 
@@ -61,3 +68,15 @@ def apply_fix(file_path, line_no, new_code):
 
     with open(file_path, "w") as f:
         f.write("\n".join(lines) + "\n")
+
+def undo_fix(file_path):
+    backup_path = file_path + ".bak"
+
+    if os.path.exists(backup_path):
+        with open(backup_path, "r") as f:
+            content = f.read()
+
+        with open(file_path, "w") as f:
+            f.write(content)
+
+        print(f"↩️ Undo applied for {file_path}")
