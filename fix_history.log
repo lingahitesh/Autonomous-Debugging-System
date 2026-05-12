@@ -2,3 +2,23 @@ Main.java:8 -> }
 utils.java:6 -> for(int i = 1; i <= n; i++)
 utils.java:8 -> sum += i;
 utils.java:15 -> return n != 0 ? sum / n : 0;
+utils.java:6 -> for(int i = 1; i <= n; i++)
+utils.java:10 -> return sum;
+Main.java:8 -> }
+utils.java:6 -> for(int i = 1; i <= n; i++)
+utils.java:15 -> return n != 0 ? sum / n : 0;
+Calculator.java:5 -> utils helper = new utils();
+utils.java:5 -> int sum = 0;
+utils.java:6 -> for(int i = 1; i <= n; i++)
+utils.java:6 -> for(int i = 1; i <= n; i++)
+utils.java:6 -> for(int i = 1; i <= n; i++)
+Main.java:8 -> }
+Main.java:8 -> abc
+utils.java:6 -> for(int i = 1; i <= n; i++)
+utils.java:10 -> return sum;
+Main.java:8 -> }
+utils.java:6 -> for(int i = 1; i <= n; i++)
+utils.java:15 -> return n != 0 ? sum / n : 0;
+Calculator.java:5 -> utils helper = new utils();
+utils.java:5 -> int sum = 0;
+utils.java:6 -> for(int i = 1; i <= n; i--)

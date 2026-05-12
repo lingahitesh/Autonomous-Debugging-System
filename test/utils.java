@@ -3,7 +3,7 @@ public class utils
     public int sumToN(int n)
     {
         int sum = 0;
-        for(int i = 1; i <= n; i++)
+        for(int i = 1; i <= n; i--)
         {
             sum += i;
         }
@@ -12,6 +12,6 @@ public class utils
 
     public int average(int sum, int n)
     {
-        return n != 0 ? sum / n : 0;
+        return sum / n;
     }
 }

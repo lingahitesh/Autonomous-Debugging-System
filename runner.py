@@ -11,6 +11,27 @@ import difflib
 
 WORK_DIR = os.getenv("WORK_DIR", "test")
 
+def create_session_backup(files, base_dir):
+    backup = {}
+
+    for file_name in files:
+        path = os.path.join(base_dir, file_name)
+
+        if os.path.exists(path):
+            with open(path, "r") as f:
+                backup[file_name] = f.read()
+
+    return backup
+
+def restore_session_backup(backup, base_dir):
+    for file_name, content in backup.items():
+        path = os.path.join(base_dir, file_name)
+
+        with open(path, "w") as f:
+            f.write(content)
+
+    print("↩️ Session rollback complete")
+
 def build_error_keys(parsed, strategy):
     message = parsed.get("message", "").lower()
     file_name = parsed.get("file", "unknown")
@@ -253,7 +274,15 @@ def main():
         print(verification)
 
         changed_files = set()
+        files_to_backup = []
 
+        for file_name, _, _ in fixes:
+            target_file = file_name if file_name else parsed.get("file")
+
+            if target_file:
+                files_to_backup.append(target_file)
+
+        session_backup = create_session_backup(files_to_backup, base_dir)
         # APPLY FIX FIRST
         safe_fixes = sanitize_fixes(fixes, parsed.get("file"))
 
@@ -287,10 +316,10 @@ def main():
             remember_fix(local_key, fix)
             remember_fix(global_key, fix)
         else:
-            if verification != "VALID":
-                print("❌ Fix rejected by verifier")
-                attempt += 1
-                continue
+            print("⚠️ Fix broke compilation, rolling back...")
+            restore_session_backup(session_backup, base_dir)
+            attempt += 1
+            continue
 
         attempt += 1
 
@@ -385,18 +414,22 @@ def main():
 
         seen_fixes.add(fix_signature)
         verification = verify_fix(parsed, context, fix)
-
         print("\n--- VERIFICATION ---")
-        if verification == "VALID":
-            print(verification)
-            remember_fix(local_key, fix)
-            remember_fix(global_key, fix)
-        else:
-            print("❌ Fix rejected")
-            attempt += 1
-            continue
+        print(verification)
 
         changed_files = set()
+        files_to_backup = []
+
+        for file_name, _, _ in fixes:
+            target_file = file_name if file_name else parsed.get("file")
+
+            if target_file:
+                files_to_backup.append(target_file)
+
+        session_backup = create_session_backup(
+            files_to_backup,
+            base_dir
+        )
 
         safe_fixes = sanitize_fixes(fixes, parsed.get("file"))
 
@@ -423,25 +456,25 @@ def main():
             print(f"New Code: {new_code}")
 
         compile_failed = False
+        compile_result = compile_java(directory)
 
-        for changed_file in changed_files:
-            compile_result = compile_single_java(
-                changed_file,
-                directory
-            )
-
-            if compile_result.returncode != 0:
-                compile_failed = True
-                break
+        if compile_result.returncode != 0:
+            compile_failed = True
 
         if compile_failed:
-            print("⚠️ Fix broke compilation, undoing...")
+            print("⚠️ Fix broke compilation, rolling back...")
+            restore_session_backup(session_backup, base_dir)
+            attempt += 1
+            continue
 
-            for file in changed_files:
-                undo_fix(os.path.join(base_dir, file))
+        if verification != "VALID":
+            print("❌ Fix rejected by verifier")
+            restore_session_backup(session_backup, base_dir)
+            attempt += 1
+            continue
 
-            break
-
+        remember_fix(local_key, fix)
+        remember_fix(global_key, fix)
         attempt += 1
 
     print("\n--- OUTPUT ---")
