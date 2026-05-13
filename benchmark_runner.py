@@ -185,7 +185,6 @@ def reset_test_dir(source_dir):
 # -----------------------------
 def run_benchmark():
     global TOTAL, SUCCESS
-
     cases = sorted(os.listdir(BENCHMARK_DIR))
 
     for case in cases:
@@ -195,18 +194,12 @@ def run_benchmark():
             continue
 
         print(f"\n=== Running {case} ===")
-
         reset_test_dir(case_path)
-
         TOTAL += 1
-
         stdout, stderr, duration = run_agent(TEST_DIR)
-
         print(stdout)
-
         score = evaluate(TEST_DIR, stdout, stderr)
         attempts = count_attempts(stdout)
-
         SCORES.append(score)
         ATTEMPTS.append(attempts)
         TIMES.append(duration)
@@ -218,7 +211,6 @@ def run_benchmark():
             print(f"❌ FAIL (score={score:.2f})")
 
     print_summary()
-
 
 # -----------------------------
 # SUMMARY
@@ -236,7 +228,6 @@ def print_summary():
     print(f"Avg Score: {avg_score:.2f}")
     print(f"Avg Attempts: {avg_attempts:.2f}")
     print(f"Avg Time: {avg_time:.2f} sec")
-
 
 # -----------------------------
 # ENTRY

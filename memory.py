@@ -21,5 +21,4 @@ def remember_fix(error_key, fix):
 
 def recall_fix(error_key):
     memory = load_memory()
-
     return memory.get(error_key)

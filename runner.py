@@ -195,7 +195,6 @@ def is_output_valid(output):
     for line in lines:
         if "Result:" not in line:
             return False
-
         try:
             value = int(line.split(":")[1].strip())
             if value < 0 or value > 1000:
@@ -247,7 +246,6 @@ def main():
 
         if not fix and ("end of file" in parsed.get("message", "").lower()):
             fix = recall_fix(global_key)
-
         if fix:
             print("\n[MEMORY] Reusing known fix")
         else:
@@ -268,11 +266,9 @@ def main():
             break
 
         seen_fixes.add(fix_signature)
-
         verification = verify_fix(parsed, context, fix)
         print("\n--- VERIFICATION ---")
         print(verification)
-
         changed_files = set()
         files_to_backup = []
 
@@ -365,7 +361,6 @@ def main():
         files = find_related_files_recursive(entry_file, base_dir)
         files = sorted(files, key=lambda f: score_file(f, entry_file), reverse=True)
         print("\n[DEBUG] File priority order:", files)
-
         context = []
 
         for file in files:
@@ -392,7 +387,6 @@ def main():
 
         if not fix and ("end of file" in parsed.get("message", "").lower()):
             fix = recall_fix(global_key)
-
         if fix:
             print("\n[MEMORY] Reusing known fix")
         else:
@@ -416,7 +410,6 @@ def main():
         verification = verify_fix(parsed, context, fix)
         print("\n--- VERIFICATION ---")
         print(verification)
-
         changed_files = set()
         files_to_backup = []
 
@@ -426,11 +419,7 @@ def main():
             if target_file:
                 files_to_backup.append(target_file)
 
-        session_backup = create_session_backup(
-            files_to_backup,
-            base_dir
-        )
-
+        session_backup = create_session_backup(files_to_backup, base_dir)
         safe_fixes = sanitize_fixes(fixes, parsed.get("file"))
 
         if not safe_fixes:

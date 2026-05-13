@@ -7,7 +7,6 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 def generate_fix(error_info, context, strategy):
     context_text="\n".join(context)
-
     prompt=f"""
 You are a strict Java debugging agent.
 
