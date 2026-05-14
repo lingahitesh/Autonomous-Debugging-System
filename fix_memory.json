@@ -8,5 +8,6 @@
   "utils.java_15_generic_safety": "START_FIX\nutils.java:15: return n != 0 ? sum / n : 0;\nEND_FIX",
   "Calculator.java_6_generic_general": "START_FIX\nCalculator.java:5: utils helper = new utils();\nEND_FIX",
   "generic_general": "5: int sum = 0;",
-  "utils.java_8_generic_general": "5: int sum = 0;"
+  "utils.java_8_generic_general": "5: int sum = 0;",
+  "unknown_x_generic_general": "START_FIX\nutils.java:6: for(int i = 1; i <= n; i++)\nEND_FIX"
 }

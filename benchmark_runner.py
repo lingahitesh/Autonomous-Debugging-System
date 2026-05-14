@@ -3,6 +3,7 @@ import time
 import shutil
 import subprocess
 import difflib
+import sys
 
 BASE_DIR = os.getcwd()
 BENCHMARK_DIR = os.path.join(BASE_DIR, "benchmark")
@@ -23,7 +24,7 @@ def run_agent(work_dir):
     start = time.time()
 
     process = subprocess.Popen(
-        [os.sys.executable, "runner.py"],
+        [sys.executable, os.path.join('core', 'runner.py')],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
