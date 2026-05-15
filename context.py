@@ -8,8 +8,6 @@ def get_project_classes(base_dir):
         if f.endswith(".java")
     }
 
-import re
-
 def extract_suspicious_region(file_path, window=2):
     with open(file_path, "r") as f:
         lines = f.readlines()

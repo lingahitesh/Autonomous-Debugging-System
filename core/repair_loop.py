@@ -26,14 +26,11 @@ def build_error_keys(parsed, strategy):
 
     local_key = f"{file_name}_{line}_{error_type}_{strategy}"
     global_key = f"{error_type}_{strategy}"
-
     return local_key, global_key
 
 def attempt_repair(parsed, context, base_dir, work_dir, seen_fixes):
     strategy = choose_strategy(parsed)
-
     local_key, global_key = build_error_keys(parsed, strategy)
-
     fix = recall_fix(local_key)
 
     if fix:
@@ -64,7 +61,6 @@ def attempt_repair(parsed, context, base_dir, work_dir, seen_fixes):
             continue
 
         verification = verify_fix(parsed, context, current_fix)
-
         seen_fixes.add(signature)
 
         if verification != "VALID":
@@ -85,7 +81,6 @@ def attempt_repair(parsed, context, base_dir, work_dir, seen_fixes):
                     raise Exception("Invalid file target")
 
                 apply_fix(file_path, line_no, code)
-
                 print(f"Applied fix: {file_name}:{line_no}")
 
             compile_result = compile_java(work_dir)

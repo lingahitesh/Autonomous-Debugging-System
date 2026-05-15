@@ -14,20 +14,17 @@ def sanitize_fixes(fixes, parsed_file):
             continue
 
         code = new_code.strip()
-
         # skip comments
         if code.startswith("//"):
             continue
-
         # remove duplicates
         key = (target, line_no)
         if key in seen:
             continue
         seen.add(key)
-
         cleaned.append((target, line_no, code))
 
-    # VERY IMPORTANT: limit number of fixes
+    # limit number of fixes
     return cleaned[:3]
 
 def is_output_valid(output):

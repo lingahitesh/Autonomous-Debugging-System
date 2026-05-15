@@ -39,7 +39,6 @@ def apply_fix(file_path, line_no, new_code):
 
     with open(file_path, "r") as f:
         lines = f.readlines()
-
     with open(backup_path, "w") as f:
         f.writelines(lines)
 
@@ -60,7 +59,6 @@ def apply_fix(file_path, line_no, new_code):
 
     else:
         indentation = ""
-
         if lines:
             indentation = get_indent(lines[-1])
 
@@ -75,7 +73,6 @@ def undo_fix(file_path):
     if os.path.exists(backup_path):
         with open(backup_path, "r") as f:
             content = f.read()
-
         with open(file_path, "w") as f:
             f.write(content)
 

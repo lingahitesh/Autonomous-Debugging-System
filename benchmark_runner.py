@@ -11,11 +11,9 @@ TEST_DIR = os.path.join(BASE_DIR, "test")
 
 TOTAL = 0
 SUCCESS = 0
-
 SCORES = []
 ATTEMPTS = []
 TIMES = []
-
 
 # -----------------------------
 # RUN AGENT
@@ -38,14 +36,11 @@ def run_agent(work_dir):
 
     if stdout is None:
         stdout = ""
-
     if stderr:
         print("STDERR:", stderr)
 
     end = time.time()
-
     return stdout, stderr, end - start
-
 
 # -----------------------------
 # PARSE OUTPUT
@@ -63,7 +58,6 @@ def extract_result(output):
                 return None
     return None
 
-
 # -----------------------------
 # DIFF VIEW
 # -----------------------------
@@ -76,7 +70,6 @@ def show_diff(file_path, original_lines, modified_lines):
         lineterm=""
     )
     print("\n".join(diff))
-
 
 # -----------------------------
 # APPLY FIXES
@@ -94,7 +87,6 @@ def apply_fix(file_path, line_no, new_code):
     with open(file_path, "w") as f:
         f.writelines(lines)
 
-
 def confirm_and_apply(fixes, source_dir):
     print("\n--- Proposed Fix ---")
 
@@ -105,7 +97,6 @@ def confirm_and_apply(fixes, source_dir):
             original = f.readlines()
 
         modified = original.copy()
-
         if 0 < line_no <= len(modified):
             indent = modified[line_no - 1][:len(modified[line_no - 1]) - len(modified[line_no - 1].lstrip())]
             modified[line_no - 1] = indent + code + "\n"
@@ -114,14 +105,12 @@ def confirm_and_apply(fixes, source_dir):
         show_diff(file_path, original, modified)
 
     choice = input("\nApply fix to source? (y/n): ").strip().lower()
-
     if choice == "y":
         for file_name, line_no, code in fixes:
             apply_fix(os.path.join(source_dir, file_name), line_no, code)
         print("✅ Fix applied")
     else:
         print("❌ Fix discarded")
-
 
 # -----------------------------
 # MULTI-SIGNAL EVALUATION
@@ -131,7 +120,6 @@ def evaluate(work_dir, output, stderr):
 
     if "Compilation Successful"  in output:
         score += 0.3
-
     if "Program Timeout" not in output and stderr == "":
         score += 0.3
 
@@ -149,7 +137,6 @@ def evaluate(work_dir, output, stderr):
 
     if len(results) > 0:
         score += 0.2
-
     if len(results) >= 2:
         most_common = max(set(results), key=results.count)
         count = results.count(most_common)
@@ -159,13 +146,11 @@ def evaluate(work_dir, output, stderr):
 
     return score
 
-
 # -----------------------------
 # ATTEMPT COUNT
 # -----------------------------
 def count_attempts(output):
     return max(output.count("Attempt"), 1)
-
 
 # -----------------------------
 # RESET TEST DIR
@@ -179,7 +164,6 @@ def reset_test_dir(source_dir):
     for file in os.listdir(TEST_DIR):
         if file.endswith(".class"):
             os.remove(os.path.join(TEST_DIR, file))
-
 
 # -----------------------------
 # BENCHMARK LOOP
