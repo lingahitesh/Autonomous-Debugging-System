@@ -20,7 +20,7 @@ def parse_fix(fix):
                         code=parts[1].strip()
 
                     fixes.append((file_name,line_no,code))
-                except:
+                except ValueError:
                     continue
         return fixes
 
@@ -31,15 +31,21 @@ def parse_fix(fix):
                 return [(parts[0].strip(),int(parts[1].strip()),parts[2].strip())]
             else:
                 return [(None,int(parts[0].strip()),parts[1].strip())]
-        except:
+        except ValueError:
             return []
+
+def cleanup_backup(file_path):
+    backup_path = file_path + ".bak"
+
+    if os.path.exists(backup_path):
+        os.remove(backup_path)
 
 def apply_fix(file_path, line_no, new_code):
     backup_path = file_path + ".bak"
 
-    with open(file_path, "r") as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
-    with open(backup_path, "w") as f:
+    with open(backup_path, "w", encoding="utf-8") as f:
         f.writelines(lines)
 
     lines = [line.rstrip("\n") for line in lines]
@@ -64,16 +70,5 @@ def apply_fix(file_path, line_no, new_code):
 
         lines.append(indentation + new_code)
 
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
-
-def undo_fix(file_path):
-    backup_path = file_path + ".bak"
-
-    if os.path.exists(backup_path):
-        with open(backup_path, "r") as f:
-            content = f.read()
-        with open(file_path, "w") as f:
-            f.write(content)
-
-        print(f"↩️ Undo applied for {file_path}")

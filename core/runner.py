@@ -18,5 +18,6 @@ def main():
     print("\n--- FINAL OUTPUT ---")
     result = run_java(class_name, WORK_DIR)
     print(result.stdout)
+
 if __name__ == "__main__":
     main()

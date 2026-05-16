@@ -1,4 +1,5 @@
 import subprocess
+import os
 
 def compile_single_java(java_file, directory):
     return subprocess.run(
@@ -9,12 +10,17 @@ def compile_single_java(java_file, directory):
     )
 
 def compile_java(directory):
+    java_files = []
+
+    for file in os.listdir(directory):
+        if file.endswith(".java"):
+            java_files.append(file)
+
     return subprocess.run(
-        ["javac", "*.java"],
+        ["javac"] + java_files,
         capture_output=True,
         text=True,
-        cwd=directory,
-        shell=True
+        cwd=directory
     )
 
 def run_java(class_name, cwd):
@@ -28,6 +34,7 @@ def run_java(class_name, cwd):
         )
         try:
             stdout, stderr = process.communicate(timeout=10)
+
             return subprocess.CompletedProcess(
                 args=["java", class_name],
                 returncode=process.returncode,
@@ -37,11 +44,13 @@ def run_java(class_name, cwd):
         except subprocess.TimeoutExpired:
             process.kill()
             process.wait()
+
             return subprocess.CompletedProcess(
                 args=["java", class_name],
                 returncode=-1,
                 stdout="",
                 stderr="TIMEOUT"
             )
+
     except Exception:
         return None

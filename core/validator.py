@@ -40,7 +40,7 @@ def is_output_valid(output):
             value = int(line.split(":")[1].strip())
             if value < 0 or value > 1000:
                 return False
-        except:
+        except ValueError:
             return False
 
     return True

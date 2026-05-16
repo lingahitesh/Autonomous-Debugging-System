@@ -3,6 +3,21 @@
   <component name="ChangeListManager">
     <list default="true" id="8ebcf328-d521-46ed-955d-3ff77c4b19ba" name="Changes" comment="Day11">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ai.py" beforeDir="false" afterPath="$PROJECT_DIR$/ai.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/benchmark_runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/benchmark_runner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/context.py" beforeDir="false" afterPath="$PROJECT_DIR$/context.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/executor.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/executor.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/repair_loop.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/repair_loop.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/runner.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/runner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/session.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/session.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/validator.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/validator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fixer.py" beforeDir="false" afterPath="$PROJECT_DIR$/fixer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/memory.py" beforeDir="false" afterPath="$PROJECT_DIR$/memory.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/parser.py" beforeDir="false" afterPath="$PROJECT_DIR$/parser.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/runner_old.py" beforeDir="false" afterPath="$PROJECT_DIR$/runner_old.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/test/utils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/utils.java.bak" beforeDir="false" afterPath="$PROJECT_DIR$/test/utils.java.bak" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -2,7 +2,7 @@ import os
 from parser import parse_compile_error, parse_runtime_error
 from context import extract_context, find_related_files_recursive, extract_suspicious_region
 from ai import generate_fix, verify_fix
-from fixer import parse_fix, apply_fix
+from fixer import parse_fix, apply_fix, cleanup_backup
 from scorer import score_file
 from strategy import choose_strategy
 from memory import remember_fix, recall_fix
@@ -32,6 +32,7 @@ def attempt_repair(parsed, context, base_dir, work_dir, seen_fixes):
     strategy = choose_strategy(parsed)
     local_key, global_key = build_error_keys(parsed, strategy)
     fix = recall_fix(local_key)
+    failed_fixes = []
 
     if fix:
         candidate_fixes = [fix]
@@ -40,7 +41,7 @@ def attempt_repair(parsed, context, base_dir, work_dir, seen_fixes):
 
     for _ in range(3):
         if not candidate_fixes:
-            current_fix = generate_fix(parsed, context, strategy)
+            current_fix = generate_fix(parsed, context, strategy,list(set(failed_fixes)))
         else:
             current_fix = candidate_fixes.pop(0)
 
@@ -48,6 +49,7 @@ def attempt_repair(parsed, context, base_dir, work_dir, seen_fixes):
         signature = f"{local_key}:{normalized_fix}"
 
         if signature in seen_fixes:
+            failed_fixes.append(current_fix)
             continue
 
         fixes = parse_fix(current_fix)
@@ -64,12 +66,13 @@ def attempt_repair(parsed, context, base_dir, work_dir, seen_fixes):
         seen_fixes.add(signature)
 
         if verification != "VALID":
+            failed_fixes.append(current_fix)
             continue
 
-        files_to_backup = []
-
-        for file_name, _, _ in safe_fixes:
-            files_to_backup.append(file_name)
+        files_to_backup = list({
+            file_name
+            for file_name, _, _ in safe_fixes
+        })
 
         backup = create_session_backup(files_to_backup, base_dir)
 
@@ -86,14 +89,18 @@ def attempt_repair(parsed, context, base_dir, work_dir, seen_fixes):
             compile_result = compile_java(work_dir)
 
             if compile_result.returncode != 0:
-                raise Exception("Compilation failed")
+                raise RuntimeError("Compilation failed")
+
+            for file_name, _, _ in safe_fixes:
+                file_path = os.path.join(base_dir, file_name)
+                cleanup_backup(file_path)
 
             remember_fix(local_key, current_fix)
             remember_fix(global_key, current_fix)
 
             return True
-
         except Exception:
+            failed_fixes.append(current_fix)
             print("Rolling back bad fix...")
             restore_session_backup(backup, base_dir)
 
@@ -115,10 +122,17 @@ def compile_phase(work_dir):
         parsed = parse_compile_error(compile_result.stderr)
         if not parsed:
             return False
-        context = extract_context(
-            os.path.join(base_dir,parsed["file"]),
-            parsed["line"]
-        )
+        message = parsed.get("message", "").lower()
+        file_path = os.path.join(base_dir, parsed["file"])
+
+        if "end of file" in message:
+            context = extract_suspicious_region(file_path)
+
+            if not context:
+                context = extract_context(file_path, None)
+
+        else:
+            context = extract_context(file_path, parsed["line"])
         fixed = attempt_repair(parsed,context,base_dir,work_dir,seen_fixes)
         if not fixed:
             attempt += 1
@@ -135,6 +149,9 @@ def runtime_phase(work_dir, class_name):
     while attempt < MAX_ATTEMPTS:
         print(f"\n--- Run Attempt {attempt + 1} ---")
         result = run_java(class_name,work_dir)
+
+        if not result:
+            return False
         if result.returncode == 0 and is_output_valid(result.stdout):
             print("Running Successful")
             return True

@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import difflib
 import sys
+import json
 
 BASE_DIR = os.getcwd()
 BENCHMARK_DIR = os.path.join(BASE_DIR, "benchmark")
@@ -54,14 +55,14 @@ def extract_result(output):
         if line.startswith("Result:"):
             try:
                 return int(line.split(":")[1].strip())
-            except:
+            except ValueError:
                 return None
     return None
 
 # -----------------------------
 # DIFF VIEW
 # -----------------------------
-def show_diff(file_path, original_lines, modified_lines):
+def show_diff(original_lines, modified_lines):
     diff = difflib.unified_diff(
         original_lines,
         modified_lines,
@@ -75,7 +76,7 @@ def show_diff(file_path, original_lines, modified_lines):
 # APPLY FIXES
 # -----------------------------
 def apply_fix(file_path, line_no, new_code):
-    with open(file_path, "r") as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
     if 0 < line_no <= len(lines):
@@ -84,7 +85,7 @@ def apply_fix(file_path, line_no, new_code):
     else:
         lines.append(new_code + "\n")
 
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         f.writelines(lines)
 
 def confirm_and_apply(fixes, source_dir):
@@ -93,7 +94,7 @@ def confirm_and_apply(fixes, source_dir):
     for file_name, line_no, code in fixes:
         file_path = os.path.join(source_dir, file_name)
 
-        with open(file_path, "r") as f:
+        with open(file_path, "r", encoding="utf-8") as f:
             original = f.readlines()
 
         modified = original.copy()
@@ -102,7 +103,7 @@ def confirm_and_apply(fixes, source_dir):
             modified[line_no - 1] = indent + code + "\n"
 
         print(f"\n📄 {file_name}")
-        show_diff(file_path, original, modified)
+        show_diff(original, modified)
 
     choice = input("\nApply fix to source? (y/n): ").strip().lower()
     if choice == "y":
@@ -213,6 +214,18 @@ def print_summary():
     print(f"Avg Score: {avg_score:.2f}")
     print(f"Avg Attempts: {avg_attempts:.2f}")
     print(f"Avg Time: {avg_time:.2f} sec")
+
+    report = {
+        "total": TOTAL,
+        "success": SUCCESS,
+        "success_rate": success_rate,
+        "scores": SCORES,
+        "attempts": ATTEMPTS,
+        "times": TIMES
+    }
+
+    with open("benchmark_results.json", "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2)
 
 # -----------------------------
 # ENTRY

@@ -5,7 +5,12 @@ from groq import Groq
 load_dotenv()
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-def generate_fix(error_info, context, strategy):
+def generate_fix(error_info, context, strategy,failed_fixes=None):
+    history = ""
+
+    if failed_fixes:
+        history = "\n".join(failed_fixes)
+    print(history)
     context_text="\n".join(context)
     prompt=f"""
 You are a strict Java debugging agent.
@@ -14,6 +19,9 @@ Fix the root cause while preserving original intent.
 
 Error:
 {error_info.get("message","")}
+
+Failed history:
+{history}
 
 Strategy:
 {strategy}
