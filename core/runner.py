@@ -1,9 +1,13 @@
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from repair_loop import compile_phase, runtime_phase
 from executor import run_java
-import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WORK_DIR = os.path.join(BASE_DIR, "test")
+WORK_DIR = os.environ.get("WORK_DIR", os.path.join(BASE_DIR, "test"))
 
 def main():
     class_name = "Main"

@@ -5,20 +5,21 @@ from groq import Groq
 load_dotenv()
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-def generate_fix(error_info, context, strategy,failed_fixes=None):
+def generate_fix(error_info, context, strategy, failed_fixes=None):
     history = ""
 
     if failed_fixes:
         history = "\n".join(failed_fixes)
-    print(history)
-    context_text="\n".join(context)
-    prompt=f"""
+
+    context_text = "\n".join(context)
+
+    prompt = f"""
 You are a strict Java debugging agent.
 
 Fix the root cause while preserving original intent.
 
 Error:
-{error_info.get("message","")}
+{error_info.get("message", "")}
 
 Failed history:
 {history}
@@ -37,8 +38,10 @@ Rules:
 - If loop issue, fix condition/update only
 - If syntax issue, complete broken structure/statements
 - If safety issue, add minimal guards
-- If EOF parsing error, append missing braces on new lines
-- If multiple files are shown, include file names
+- If EOF or missing brace error, count all open vs closed braces in the shown code and insert the missing closing brace at the correct scope level on its own line
+- If multiple top-level classes exist in one file, output fixes as multi-file using START_FIX/END_FIX with correct file names
+- If multiple files are shown, include file names in output
+- If a closing brace is missing, output the line number of the first line that belongs to the NEXT scope (the line before which the brace should be inserted), not the compiler error line
 
 Output:
 Single:
@@ -51,16 +54,16 @@ START_FIX
 END_FIX
 """
 
-    response=client.chat.completions.create(
+    response = client.chat.completions.create(
         model="openai/gpt-oss-120b",
         messages=[
             {
-                "role":"system",
-                "content":"Output only valid Java fixes in required format."
+                "role": "system",
+                "content": "Output only valid Java fixes in required format."
             },
             {
-                "role":"user",
-                "content":prompt
+                "role": "user",
+                "content": prompt
             }
         ],
         temperature=0
@@ -69,11 +72,11 @@ END_FIX
     return response.choices[0].message.content.strip()
 
 def verify_fix(error_info, context, fix):
-    context_text="\n".join(context)
+    context_text = "\n".join(context)
 
-    prompt=f"""
+    prompt = f"""
 Error:
-{error_info.get("message","")}
+{error_info.get("message", "")}
 
 Code:
 {context_text}
@@ -91,18 +94,19 @@ INVALID if:
 - the fix breaks program logic
 - the fix repeats a previously failed pattern
 - the fix does not resolve the root cause
+- for EOF/brace errors: the fix does not insert a brace at the correct scope level
 """
 
-    response=client.chat.completions.create(
+    response = client.chat.completions.create(
         model="openai/gpt-oss-120b",
         messages=[
             {
-                "role":"system",
-                "content":"Strict validator."
+                "role": "system",
+                "content": "Strict validator."
             },
             {
-                "role":"user",
-                "content":prompt
+                "role": "user",
+                "content": prompt
             }
         ],
         temperature=0

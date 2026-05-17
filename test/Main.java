@@ -5,4 +5,4 @@ public class Main
         int result = new Calculator().compute(10);
         System.out.println("Result: " + result);
     }
-    }
+}

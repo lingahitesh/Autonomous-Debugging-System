@@ -1,38 +1,38 @@
+import re
 import os
 
 def parse_fix(fix):
-    fixes=[]
+    fixes = []
 
     if "START_FIX" in fix:
-        lines=fix.splitlines()
+        lines = fix.splitlines()
         for line in lines:
-            if ":" in line and "START_FIX" not in line and "END_FIX" not in line:
-                parts=line.split(":",2)
+            if "START_FIX" in line or "END_FIX" in line:
+                continue
 
-                try:
-                    if len(parts)==3:
-                        file_name=parts[0].strip()
-                        line_no=int(parts[1].strip())
-                        code=parts[2].strip()
-                    else:
-                        file_name=None
-                        line_no=int(parts[0].strip())
-                        code=parts[1].strip()
+            m = re.match(r'^([A-Za-z_][\w]*\.java):(\d+):\s*(.+)$', line.strip())
+            if m:
+                fixes.append((m.group(1), int(m.group(2)), m.group(3).strip()))
+                continue
 
-                    fixes.append((file_name,line_no,code))
-                except ValueError:
-                    continue
+            m = re.match(r'^(\d+):\s*(.+)$', line.strip())
+            if m:
+                fixes.append((None, int(m.group(1)), m.group(2).strip()))
+
         return fixes
 
     else:
-        parts=fix.split(":",2)
-        try:
-            if len(parts)==3:
-                return [(parts[0].strip(),int(parts[1].strip()),parts[2].strip())]
-            else:
-                return [(None,int(parts[0].strip()),parts[1].strip())]
-        except ValueError:
-            return []
+        line = fix.strip()
+
+        m = re.match(r'^([A-Za-z_][\w]*\.java):(\d+):\s*(.+)$', line)
+        if m:
+            return [(m.group(1), int(m.group(2)), m.group(3).strip())]
+
+        m = re.match(r'^(\d+):\s*(.+)$', line)
+        if m:
+            return [(None, int(m.group(1)), m.group(2).strip())]
+
+        return []
 
 def cleanup_backup(file_path):
     backup_path = file_path + ".bak"
@@ -61,13 +61,17 @@ def apply_fix(file_path, line_no, new_code):
     if 0 < line_no <= len(lines):
         old_line = lines[line_no - 1]
         indentation = get_indent(old_line)
-        lines[line_no - 1] = indentation + new_code
 
+        # If new_code is a closing brace and the target line isn't one,
+        # INSERT before the target line instead of replacing it
+        if new_code.strip() in ("}", "};") and old_line.strip() not in ("}", "};"):
+            lines.insert(line_no - 1, indentation + new_code)
+        else:
+            lines[line_no - 1] = indentation + new_code
     else:
         indentation = ""
         if lines:
             indentation = get_indent(lines[-1])
-
         lines.append(indentation + new_code)
 
     with open(file_path, "w", encoding="utf-8") as f:
