@@ -6,7 +6,7 @@ import difflib
 import sys
 import json
 
-BASE_DIR = os.getcwd()
+BASE_DIR = os.getcwd() #C:\Users\KIIT\PycharmProjects\DebuggingAgent
 BENCHMARK_DIR = os.path.join(BASE_DIR, "benchmark")
 TEST_DIR = os.path.join(BASE_DIR, "test")
 
@@ -30,10 +30,10 @@ def run_agent(work_dir):
         encoding="utf-8",
         errors="ignore",
         cwd=BASE_DIR,
-        env={**os.environ, "WORK_DIR": work_dir}
+        env={**os.environ, "WORK_DIR": work_dir} # Send env variables to child process
     )
 
-    stdout, stderr = process.communicate()
+    stdout, stderr = process.communicate() # Extraction of output and errors
 
     if stdout is None:
         stdout = ""
@@ -53,10 +53,8 @@ def extract_result(output):
     for line in output.split("\n"):
         line = line.strip()
         if line.startswith("Result:"):
-            try:
-                return int(line.split(":")[1].strip())
-            except ValueError:
-                return None
+            return line.split(":",1)[1].strip() # Result after line no. with only first :
+
     return None
 
 # -----------------------------
@@ -68,50 +66,9 @@ def show_diff(original_lines, modified_lines):
         modified_lines,
         fromfile="before",
         tofile="after",
-        lineterm=""
+        lineterm="" # no extra lines
     )
     print("\n".join(diff))
-
-# -----------------------------
-# APPLY FIXES
-# -----------------------------
-def apply_fix(file_path, line_no, new_code):
-    with open(file_path, "r", encoding="utf-8") as f:
-        lines = f.readlines()
-
-    if 0 < line_no <= len(lines):
-        indent = lines[line_no - 1][:len(lines[line_no - 1]) - len(lines[line_no - 1].lstrip())]
-        lines[line_no - 1] = indent + new_code + "\n"
-    else:
-        lines.append(new_code + "\n")
-
-    with open(file_path, "w", encoding="utf-8") as f:
-        f.writelines(lines)
-
-def confirm_and_apply(fixes, source_dir):
-    print("\n--- Proposed Fix ---")
-
-    for file_name, line_no, code in fixes:
-        file_path = os.path.join(source_dir, file_name)
-
-        with open(file_path, "r", encoding="utf-8") as f:
-            original = f.readlines()
-
-        modified = original.copy()
-        if 0 < line_no <= len(modified):
-            indent = modified[line_no - 1][:len(modified[line_no - 1]) - len(modified[line_no - 1].lstrip())]
-            modified[line_no - 1] = indent + code + "\n"
-
-        print(f"\n📄 {file_name}")
-        show_diff(original, modified)
-
-    choice = input("\nApply fix to source? (y/n): ").strip().lower()
-    if choice == "y":
-        for file_name, line_no, code in fixes:
-            apply_fix(os.path.join(source_dir, file_name), line_no, code)
-        print("✅ Fix applied")
-    else:
-        print("❌ Fix discarded")
 
 # -----------------------------
 # MULTI-SIGNAL EVALUATION
@@ -125,7 +82,7 @@ def evaluate(work_dir, output, stderr):
         score += 0.3
 
     results = []
-
+    # Run code thrice and extract set of results that successfully ran
     for _ in range(3):
         stdout_i, stderr_i, _ = run_agent(work_dir)
 
@@ -135,9 +92,10 @@ def evaluate(work_dir, output, stderr):
         r = extract_result(stdout_i)
         if r is not None:
             results.append(r)
-
+    # Result produced
     if len(results) > 0:
         score += 0.2
+    # Consistency score
     if len(results) >= 2:
         most_common = max(set(results), key=results.count)
         count = results.count(most_common)
@@ -158,13 +116,13 @@ def count_attempts(output):
 # -----------------------------
 def reset_test_dir(source_dir):
     if os.path.exists(TEST_DIR):
-        shutil.rmtree(TEST_DIR)
+        shutil.rmtree(TEST_DIR) # removes test directory
 
-    shutil.copytree(source_dir, TEST_DIR)
+    shutil.copytree(source_dir, TEST_DIR) # copies entire test case into test directory
 
     for file in os.listdir(TEST_DIR):
         if file.endswith(".class"):
-            os.remove(os.path.join(TEST_DIR, file))
+            os.remove(os.path.join(TEST_DIR, file)) # remove .class files
 
 # -----------------------------
 # BENCHMARK LOOP
@@ -223,8 +181,8 @@ def print_summary():
         "attempts": ATTEMPTS,
         "times": TIMES
     }
-
-    with open("benchmark_results.json", "w", encoding="utf-8") as f:
+    # Result file
+    with open(os.path.join(BASE_DIR, "benchmark_results.json"), "w", encoding="utf-8") as f:
         json.dump(report, f, indent=2)
 
 # -----------------------------
