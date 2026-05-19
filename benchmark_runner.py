@@ -153,7 +153,6 @@ def run_benchmark():
             print(f"✅ PASS (score={score:.2f})")
         else:
             print(f"❌ FAIL (score={score:.2f})")
-
     print_summary()
 
 # -----------------------------

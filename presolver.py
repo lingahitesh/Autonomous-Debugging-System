@@ -1,5 +1,3 @@
-# presolver.py
-
 import re
 
 def try_local_fix(parsed, file_path):
@@ -8,7 +6,6 @@ def try_local_fix(parsed, file_path):
     Returns (line_no, code) tuple if fixable, None otherwise.
     """
     message = parsed.get("message", "").lower()
-
     with open(file_path, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
@@ -21,7 +18,6 @@ def try_local_fix(parsed, file_path):
 
     return None
 
-
 def _fix_missing_brace(lines):
     """
     Scans the file and finds the first unclosed block,
@@ -30,11 +26,9 @@ def _fix_missing_brace(lines):
     depth = 0
     last_open_line = 0
     block_end = None
-
     # Track depth and find where it goes negative or where
     # a return/statement appears at wrong depth
     clean = _strip_strings_and_comments(lines)
-
     scope_stack = []  # stack of line indices where { was opened
 
     for i, line in enumerate(clean):
@@ -47,10 +41,8 @@ def _fix_missing_brace(lines):
 
     if not scope_stack:
         return None  # braces are balanced, not our problem
-
     # The last unclosed { — insert } after the next non-blank line
     last_unclosed = scope_stack[-1]  # 0-indexed line of the unclosed {
-
     # Find the line after which the block's content ends
     # Walk forward from last_unclosed, find last non-empty line
     # before either the next same-level statement or EOF
@@ -61,13 +53,11 @@ def _fix_missing_brace(lines):
             insert_after = i
 
     insert_line_no = insert_after + 2  # 1-indexed, insert AFTER this line
-
     # Get indentation from the opening brace line
     open_line = lines[last_unclosed]
     indent = open_line[:len(open_line) - len(open_line.lstrip())]
 
     return (insert_line_no, indent + "}")
-
 
 def _fix_missing_semicolon(lines, error_line):
     if not error_line or error_line > len(lines):
@@ -102,7 +92,6 @@ def _strip_strings_and_comments(lines):
                     continue
                 i += 1
                 continue
-
             if not in_string and not in_char:
                 if line[i:i+2] == '//':
                     break  # rest of line is comment
@@ -131,7 +120,6 @@ def _strip_strings_and_comments(lines):
                 elif in_char and c == "'":
                     in_char = False
             i += 1
-
         clean.append("".join(result))
 
     return clean
